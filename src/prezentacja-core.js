@@ -1,22 +1,3 @@
-/*
-Copyright <2020> <Lukasz Targas (lukasz.targas@googlemail.com)>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy 
-of this software and associated documentation files (the "Software"), to deal 
-in the Software without restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
-  and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies
-or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
-THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 class Prezentacja extends Tablica 
 {
 
@@ -95,6 +76,7 @@ class Prezentacja extends Tablica
 
     }
 
+    /*
     animatePath(path) // segmentsArray: Array of Path Segments
     {
 
@@ -164,7 +146,121 @@ class Prezentacja extends Tablica
            // path.visible = true;
             
         }
-        console.log("bla");
     }
+    */
+
+    getPositionOnBezierCurve(t,b0,b1,b2,b3)
+    {
+        return (-b0+3*b1-3*b2+b3)*t*t*t+(3*b0-6*b1+3*b2)*t*t+(-3*b0+3*b1)*t+b0;
+    }
+
+    animatePaths(paths) // paths: Array of paper.Path's 
+    {
+
+        let t = 0;
+        let i = 0;
+        let k = 0;  
+        
+        let L = paths.length;
+        
+        if (L == 0)
+        {
+            return null;
+        }
+        //in paths[k].onFrame existiert kein "this". Daher diese Loeosung. Unschoen, aber es funktioniert.
+
+        let convertToSimplePath = this.convertToSimplePath; 
+        let getPositionOnBezierCurve = this.getPositionOnBezierCurve; //
+
+        let simplePath = convertToSimplePath(paths[k]);
+        let segmentsArray = paths[k].segments;     
+
+        let N = segmentsArray.length-1;
+
+        let xPos = segmentsArray[i].point._x;
+        let yPos = segmentsArray[i].point._y;
+
+        let cursor = new paper.Path.Rectangle(new paper.Point(xPos, yPos), new paper.Size(this.cursorSize,this.cursorSize));
+        cursor.strokeColor = 'black';
+        cursor.fillColor = 'black';
+        cursor.shadowColor = "black";
+        cursor.shadowBlur = 10;
+
+        for (let j = 0;j<L;j++)
+        {
+            paths[j].visible = false;
+        }
+
+        let tempPath = new paper.Path();
+        tempPath.strokeColor = simplePath.color;
+        tempPath.strokeWidth = simplePath.width;
+
+        paths[k].onFrame =  function(event) 
+        {
+            
+            let b0,b1,b2,b3,hB1,hB2;
+
+            b0 = segmentsArray[i].point._x;
+            hB1 =  segmentsArray[i]._handleOut._x;
+            hB2 = segmentsArray[i+1]._handleIn._x;
+            b3 =  segmentsArray[i+1].point._x;
+            b1 = b0+hB1;
+            b2 = b3+hB2;
+        
+            xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
+
+
+            b0 = segmentsArray[i].point._y;
+            hB1 =  segmentsArray[i]._handleOut._y;
+            hB2 = segmentsArray[i+1]._handleIn._y;
+            b3 =  segmentsArray[i+1].point._y;
+            b1 = b0+hB1;
+            b2 = b3+hB2;
+        
+            yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
+           
+            tempPath.add(new paper.Point(xPos,yPos));
+
+            cursor.position =  new paper.Point(xPos, yPos);
+
+            t +=0.2;
+            
+            if (t > 1)
+            {
+                t = 0;
+                i = i+1;
+                if (i == N)
+                {
+                    paths[k].visible = true;  
+                    k += 1;
+                    if (k < L)
+                    {                      
+                        simplePath = convertToSimplePath(paths[k]);
+                        segmentsArray = paths[k].segments;
+                        N = segmentsArray.length-1;
+                        t = 0;
+                        i = 0;
+
+                        xPos = segmentsArray[i].point._x;
+                        yPos = segmentsArray[i].point._y;
+
+                        tempPath.remove();
+
+                        tempPath = new paper.Path();
+                        tempPath.strokeColor = simplePath.color;
+                        tempPath.strokeWidth = simplePath.width;
+                    }
+                    else
+                    {
+                        paper.view.pause();
+                        cursor.remove();
+                        tempPath.remove();
+                    }
+                }
+            }     
+        }
+    }
+
+
 
 }
