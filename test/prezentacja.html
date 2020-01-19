@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Load the Paper.js library -->
+<!-- <script type="text/javascript" src="../localpaperjs/paper-full.js"></script> -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.min.js"></script>
+<script type="text/javascript" src="../src/tablica-core.js"></script>
+<script type="text/javascript" src="../src/prezentacja-core.js"></script>
+<!-- Define inlined PaperScript associate it with myCanvas -->
+
+</head>
+<body style="background-color: darkgrey;">
+
+
+    <button id="draw-btn">draw</button>
+    <button id="erase-btn">erase</button> 
+    <button id="lasso-btn">lasso</button>
+    <button id="grab-btn">grab</button>
+    <button id="export-json-btn">export as json</button>
+    <button id="animate-btn">animate</button>
+
+
+    <div id = 'divCanvas'></div>
+       
+    <script>
+    let temp;
+    let temp2;
+    let temp3;
+
+
+    let k = 0;
+
+    let inkcanvas = new Prezentacja(document.getElementById("divCanvas"),800,600,1280,720,40,40);   
+    inkcanvas.drawGrid();
+    document.getElementById("draw-btn").onclick = function(){inkcanvas.setTool('draw')};
+    document.getElementById("erase-btn").onclick = function(){inkcanvas.setTool('erasePath')};
+    document.getElementById("lasso-btn").onclick = function(){inkcanvas.setTool('lasso')};
+    document.getElementById("grab-btn").onclick = function(){inkcanvas.setTool('grab')};
+    document.getElementById("export-json-btn").onclick = function(){inkcanvas.exportPathsAsJSONFile()};
+    document.getElementById("animate-btn").onclick = function(){inkcanvas.animatePaths(inkcanvas.frame._children);k++};
+
+    //let testPath = inkcanvas.makeTestPath();
+    
+
+    
+
+    </script>
+
+
+
+</body>
+</html>
