@@ -149,6 +149,77 @@ class Prezentacja extends Tablica
     }
     */
 
+    getBezierPoints(segmentsArray,i,coord)
+    {
+        let b0,b1,b2,b3,hB1,hB2;
+        if (coord=="x")
+        {
+            b0 = segmentsArray[i].point._x;
+
+            try 
+            {
+                hB1 =  segmentsArray[i]._handleOut._x;
+            }
+            catch (e) 
+            {
+                hB1 = 0;
+            }
+
+            try 
+            {
+                hB2 = segmentsArray[i+1]._handleIn._x;
+            }
+            catch (e) 
+            {
+                hB2 = 0;
+            }
+
+            try 
+            {
+                b3 =  segmentsArray[i+1].point._x;
+            }
+            catch (e) 
+            {
+                b3 = b0;
+            }
+            b1 = b0+hB1;
+            b2 = b3+hB2;
+        }
+        else if (coord=="y")
+        {
+            b0 = segmentsArray[i].point._y;
+            try 
+            {
+                hB1 =  segmentsArray[i]._handleOut._y;
+            }
+            catch (e) 
+            {
+                hB1 = 0;
+            }
+
+            try 
+            {
+                hB2 = segmentsArray[i+1]._handleIn._y;
+            }
+            catch (e) 
+            {
+                hB2 = 0;
+            }
+            
+            try 
+            {
+                b3 =  segmentsArray[i+1].point._y;
+            }
+            catch (e) 
+            {
+                b3 = b0;
+            }
+            
+            b1 = b0+hB1;
+            b2 = b3+hB2;
+        }
+        return [b0,b1,b2,b3];
+    }
     getPositionOnBezierCurve(t,b0,b1,b2,b3)
     {
         return (-b0+3*b1-3*b2+b3)*t*t*t+(3*b0-6*b1+3*b2)*t*t+(-3*b0+3*b1)*t+b0;
@@ -157,6 +228,9 @@ class Prezentacja extends Tablica
     animatePaths(paths) // paths: Array of paper.Path's 
     {
 
+        /*
+        ToDo Cursor vom Pfad zum Pfad bewegen nicht beamen.
+        */
         let t = 0;
         let i = 0;
         let k = 0;  
@@ -170,7 +244,8 @@ class Prezentacja extends Tablica
         //in paths[k].onFrame existiert kein "this". Daher diese Loeosung. Unschoen, aber es funktioniert.
 
         let convertToSimplePath = this.convertToSimplePath; 
-        let getPositionOnBezierCurve = this.getPositionOnBezierCurve; //
+        let getPositionOnBezierCurve = this.getPositionOnBezierCurve;
+        let getBezierPoints =  this.getBezierPoints;
 
         let simplePath = convertToSimplePath(paths[k]);
         let segmentsArray = paths[k].segments;     
@@ -179,6 +254,8 @@ class Prezentacja extends Tablica
 
         let xPos = segmentsArray[i].point._x;
         let yPos = segmentsArray[i].point._y;
+
+        /* durch cursor ersetzen */
 
         let cursor = new paper.Path.Rectangle(new paper.Point(xPos, yPos), new paper.Size(this.cursorSize,this.cursorSize));
         cursor.strokeColor = 'black';
@@ -198,25 +275,30 @@ class Prezentacja extends Tablica
         paths[k].onFrame =  function(event) 
         {
             
-            let b0,b1,b2,b3,hB1,hB2;
+           // let b0,b1,b2,b3,hB1,hB2;
 
+            let b0,b1,b2,b3;   
+            
+            /*
             b0 = segmentsArray[i].point._x;
             hB1 =  segmentsArray[i]._handleOut._x;
             hB2 = segmentsArray[i+1]._handleIn._x;
             b3 =  segmentsArray[i+1].point._x;
             b1 = b0+hB1;
             b2 = b3+hB2;
-        
+            */
+            [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"x");
             xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
 
-
+            /*
             b0 = segmentsArray[i].point._y;
             hB1 =  segmentsArray[i]._handleOut._y;
             hB2 = segmentsArray[i+1]._handleIn._y;
             b3 =  segmentsArray[i+1].point._y;
             b1 = b0+hB1;
             b2 = b3+hB2;
-        
+            */
+           [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"y");
             yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
            
             tempPath.add(new paper.Point(xPos,yPos));

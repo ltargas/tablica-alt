@@ -358,7 +358,14 @@ class Tablica
     drawEnd()
     {
         this.isPressed = false;
-        this.frame.children[this.currentPath].simplify(10);
+        if ( this.frame.children[this.currentPath]._segments.length == 1)
+        {
+            this.frame.children[this.currentPath].add(new paper.Point(this.cursorX,this.cursorY));
+        }    
+        else
+        {
+            this.frame.children[this.currentPath].simplify(10);
+        }
     }
 
     /* ---------------------------------------------- */
