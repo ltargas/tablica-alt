@@ -68,6 +68,13 @@ class Tablica
         this.currentFrame = 0;
         this.lastFrame = 0;
 
+        // save, redo, undo
+        this.simplePaths = [[[]]];
+        this.step = -1;  // for redo/undo
+        this.lastStep = -1;
+        this.maxSteps = 5; // max redo-steps
+
+
         this.grid = new paper.Group();
         this.grid.insertBelow(this.frame);
 
@@ -82,6 +89,7 @@ class Tablica
         this.lassoPath.insertBelow(this.grid);
         this.isSelected = false;
         this.isMoved = false;
+        this.minSelectionSize = 20;
 
         // Layers
 
@@ -366,6 +374,7 @@ class Tablica
         {
             this.frame.children[this.currentPath].simplify(10);
         }
+        this.updateSimplePaths();
     }
 
     /* ---------------------------------------------- */
@@ -387,6 +396,7 @@ class Tablica
     erasePathEnd()
     {
         this.isPressed = false;
+        this.updateSimplePaths();
     }
 
     /* erasePath - subfunctions */
@@ -400,7 +410,17 @@ class Tablica
                 this.frame.children[i].remove();
                 this.currentPath[this.currentFrame] = this.frame.children.length -1;
             }
+            else if (this.frame.children[i].segments[0]._point._x >= this.cursorX - 0.5*this.cursorSize && this.frame.children[i].segments[0]._point._x <= this.cursorX + 0.5*this.cursorSize)
+            {
+                if (this.frame.children[i].segments[0]._point._y >= this.cursorY - 0.5*this.cursorSize && this.frame.children[i].segments[0]._point._y <= this.cursorY + 0.5*this.cursorSize)
+                {
+                    this.frame.children[i].remove();
+                    this.currentPath[this.currentFrame] = this.frame.children.length -1;
+                }
+            }
         }
+
+
     }
 
     eraseAllPaths()
@@ -480,6 +500,7 @@ class Tablica
         {
             this.selectPaths();
         }
+        this.updateSimplePaths();
     }
 
     /* lasso - subfunctions */
@@ -507,11 +528,31 @@ class Tablica
     drawSelectRect(tempItems)
     {
         let tempRectangle = null;
-        if (tempItems.length == 1)
+        if (tempItems.length == 1) // select one path
         {
             tempRectangle = tempItems[0].bounds;
+
+            let xmin = tempItems[0].bounds.topLeft._x;
+            let ymin = tempItems[0].bounds.topLeft._y;
+
+            let xmax = tempItems[0].bounds.bottomRight._x;
+            let ymax = tempItems[0].bounds.bottomRight._y;
+
+            if (xmax - xmin < this.minSelectionSize)
+            {
+                xmax += 0.5*this.minSelectionSize;
+                xmin -= 0.5*this.minSelectionSize;
+            }
+
+            if (ymax - ymin < this.minSelectionSize)
+            {
+                ymax += 0.5*this.minSelectionSize;
+                ymin -= 0.5*this.minSelectionSize;
+            }
+
+            tempRectangle = new paper.Rectangle(new paper.Point(xmin,ymin),new paper.Point(xmax,ymax));
         }
-        else
+        else // select many paths
         {
             let xmin = tempItems[0].bounds.topLeft._x;
             let ymin = tempItems[0].bounds.topLeft._y;
@@ -538,6 +579,20 @@ class Tablica
                     ymax = tempItems[i].bounds.bottomRight._y;
                 }
             }
+
+
+            if (xmax - xmin < this.minSelectionSize)
+            {
+                xmax += 0.5*this.minSelectionSize;
+                xmin -= 0.5*this.minSelectionSize;
+            }
+
+            if (ymax - ymin < this.minSelectionSize)
+            {
+                ymax += 0.5*this.minSelectionSize;
+                ymin -= 0.5*this.minSelectionSize;
+            }
+
             tempRectangle = new paper.Rectangle(new paper.Point(xmin,ymin),new paper.Point(xmax,ymax));
         }
 
@@ -615,8 +670,8 @@ class Tablica
     /* ---------------------------------------------- */
     /* ---------------------------------------------- */
 
-    /* IMPORT / EXPORT */
 
+    /* SAVE / IMPORT / EXPORT */
 
 	convertToSimplePath(path)
 	{	
@@ -662,6 +717,83 @@ class Tablica
 
 
 	}
+
+
+    updateSimplePaths()
+    {
+        this.step += 1;
+        this.simplePaths[this.currentFrame][this.step] = [];
+
+        for (let k = 0;k<this.frame._children.length;k++)
+        {
+            this.simplePaths[this.currentFrame][this.step].push(this.convertToSimplePath(this.frame._children[k]));
+        }
+        this.simplePaths[this.currentFrame].push([]);
+
+        if (this.lastStep < this.step)
+        {
+            this.lastStep = this.step;
+        }
+        
+    }
+
+
+    drawFromSimplePaths()
+    {
+        this.frame.clear();
+        this.currentPath = [-1];
+        if (this.step>-1)
+        {
+            for (let k = 0;k<this.simplePaths[this.currentFrame][this.step].length;k++)
+            {
+                this.currentPath[this.currentFrame] += 1;
+
+                let segments = [];
+
+                for (let i = 0;i<this.simplePaths[this.currentFrame][this.step][k].x.length;i++)
+                {
+                    let p =  new paper.Point(this.simplePaths[this.currentFrame][this.step][k].x[i],this.simplePaths[this.currentFrame][this.step][k].y[i]);
+                    let h_in = new paper.Point(this.simplePaths[this.currentFrame][this.step][k].xIn[i],this.simplePaths[this.currentFrame][this.step][k].yIn[i]);
+                    let h_out = new paper.Point(this.simplePaths[this.currentFrame][this.step][k].xOut[i],this.simplePaths[this.currentFrame][this.step][k].yOut[i]);
+                    
+                    segments.push(new paper.Segment(p,h_in,h_out));
+                }
+
+                this.frame.addChild(new paper.Path(segments));
+                this.frame.children[this.currentPath].strokeColor = this.simplePaths[this.currentFrame][this.step][k].color;
+                this.frame.children[this.currentPath].strokeWidth = this.simplePaths[this.currentFrame][this.step][k].width;
+                this.frame.children[this.currentPath].selected = this.simplePaths[this.currentFrame][this.step][k].selected;
+                this.frame.children[this.currentPath].closed = this.simplePaths[this.currentFrame][this.step][k].closed;
+                this.frame.children[this.currentPath].strokeCap = "round";
+            }
+            let tempItems = paper.project.getItems({selected:true, class:paper.Path});
+            if (tempItems.length>0)
+            {
+                this.drawSelectRect(tempItems);
+                this.setTool('lasso');
+            }
+        }    
+    }
+
+
+    undo()
+    {
+        if (this.step >= 0)
+        {
+            this.step -=1;
+            this.drawFromSimplePaths();
+        }
+        
+    }
+
+    redo()
+    {
+        if (this.step < this.lastStep)
+        {
+            this.step +=1;
+            this.drawFromSimplePaths();
+        }
+    }
 
     exportPathsAsJSON()
     {

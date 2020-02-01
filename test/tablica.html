@@ -12,26 +12,29 @@
 
 
     <button id="draw-btn">draw</button>
-    <button id="erase-btn">erase</button> 
+    <button id="erase-btn">erase</button>
     <button id="lasso-btn">lasso</button>
     <button id="grab-btn">grab</button>
-    <button id="export-json-btn">export as json</button>
+	<button id="undo-btn">undo</button>
+	<button id="redo-btn">redo</button>
+
 
 
     <div id = 'divCanvas'></div>
-       
+
     <script>
     let temp;
     let temp2;
     let temp3;
 
-    let inkcanvas = new Tablica(document.getElementById("divCanvas"),800,600,1280,720,40,40);   
+    let inkcanvas = new Tablica(document.getElementById("divCanvas"),800,600,1280,720,40,40);
     inkcanvas.drawGrid();
     document.getElementById("draw-btn").onclick = function(){inkcanvas.setTool('draw')};
     document.getElementById("erase-btn").onclick = function(){inkcanvas.setTool('erasePath')};
     document.getElementById("lasso-btn").onclick = function(){inkcanvas.setTool('lasso')};
     document.getElementById("grab-btn").onclick = function(){inkcanvas.setTool('grab')};
-    document.getElementById("export-json-btn").onclick = function(){inkcanvas. exportPathsAsJSONFile()};
+	document.getElementById("undo-btn").onclick = function(){inkcanvas.undo()};
+    document.getElementById("redo-btn").onclick = function(){inkcanvas.redo()};
 
 
     </script>
