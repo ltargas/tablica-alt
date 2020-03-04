@@ -16,9 +16,15 @@
     <button id="lasso-btn">lasso</button>
     <button id="grab-btn">grab</button>
 	<button id="undo-btn">undo</button>
-	<button id="redo-btn">redo</button>
+    <button id="redo-btn">redo</button>
+    
+    <button id="prev-btn">prev</button>
 
+    <button id="next-btn">next</button>
 
+	<button id="save-btn">save</button>
+    <input type="file" id="textfile" name="textfile" style="width:19em;"  />
+    <button id="load-btn">load</button>
 
     <div id = 'divCanvas'></div>
 
@@ -35,7 +41,12 @@
     document.getElementById("grab-btn").onclick = function(){inkcanvas.setTool('grab')};
 	document.getElementById("undo-btn").onclick = function(){inkcanvas.undo()};
     document.getElementById("redo-btn").onclick = function(){inkcanvas.redo()};
-
+    document.getElementById("prev-btn").onclick = function(){inkcanvas.goToPreviousFrame()};
+    document.getElementById("next-btn").onclick = function(){inkcanvas.goToNextFrame()};
+    
+    document.getElementById("save-btn").onclick = function(){inkcanvas.exportPathsAsHTML()};
+    document.getElementById("textfile").onchange= function(){inkcanvas.loadHTMLFile(this)};
+    document.getElementById("load-btn").onclick = function(){inkcanvas.importPathsFromHTML()};    
 
     </script>
 

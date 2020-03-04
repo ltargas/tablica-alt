@@ -48,7 +48,7 @@ class Tablica
 
         this.tool = "draw"; // draw, erasePath, lasso
         this.isPressed = false;
-        this.currentPath = -1;
+   
 
         // Create Canvas
 
@@ -68,11 +68,12 @@ class Tablica
         this.currentFrame = 0;
         this.lastFrame = 0;
 
-        // save, redo, undo
+        // save, load, redo, undo
         this.simplePaths = [[[]]];
-        this.step = -1;  // for redo/undo
-        this.lastStep = -1;
+        this.step = [-1];  // for redo/undo
+        this.lastStep = [-1];
         this.maxSteps = 5; // max redo-steps
+        this.fileReader = new FileReader(); // need for load from file
 
 
         this.grid = new paper.Group();
@@ -352,27 +353,27 @@ class Tablica
     {
         this.currentPath[this.currentFrame] += 1;
         this.frame.addChild(new paper.Path());
-        this.frame.children[this.currentPath].strokeColor = this.currentColor;
-        this.frame.children[this.currentPath].strokeWidth = this.currentWidth;
-        this.frame.children[this.currentPath].strokeCap = "round";
-        this.frame.children[this.currentPath].add(new paper.Point(this.cursorX,this.cursorY));
+        this.frame._children[this.currentPath[this.currentFrame]].strokeColor = this.currentColor;
+        this.frame._children[this.currentPath[this.currentFrame]].strokeWidth = this.currentWidth;
+        this.frame._children[this.currentPath[this.currentFrame]].strokeCap = "round";
+        this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
     }
 
     drawMove()
     {
-        this.frame.children[this.currentPath].add(new paper.Point(this.cursorX,this.cursorY));
+        this.frame.children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
     }
 
     drawEnd()
     {
         this.isPressed = false;
-        if ( this.frame.children[this.currentPath]._segments.length == 1)
+        if ( this.frame.children[this.currentPath[this.currentFrame]]._segments.length == 1)
         {
-            this.frame.children[this.currentPath].add(new paper.Point(this.cursorX,this.cursorY));
+            this.frame.children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
         }    
         else
         {
-            this.frame.children[this.currentPath].simplify(10);
+            this.frame.children[this.currentPath[this.currentFrame]].simplify(10);
         }
         this.updateSimplePaths();
     }
@@ -425,10 +426,13 @@ class Tablica
 
     eraseAllPaths()
     {
-        for (let i = 0; i<this.frame.children.length;i++)
+
+        let N = this.frame.children.length -1;
+        while (N >= 0)
         {
-            this.frame.children[i].remove();
-            this.currentPath[this.currentFrame] = this.frame.children.length -1;    
+            this.frame.children[N].remove();
+            this.currentPath[this.currentFrame] = this.frame.children.length -1;
+            N -= 1;
         }
     }
 
@@ -670,6 +674,48 @@ class Tablica
     /* ---------------------------------------------- */
     /* ---------------------------------------------- */
 
+    /* FRAMES */
+
+    goToNextFrame()
+    {
+
+        for (let k = 0;k<this.frame._children.length;k++)
+        {
+            this.simplePaths[this.currentFrame][this.step[this.currentFrame]].push(this.convertToSimplePath(this.frame._children[k]));
+        }
+
+
+        if (this.currentFrame == this.lastFrame)
+        {
+            this.lastFrame += 1;
+            this.currentPath.push(-1);
+            this.simplePaths.push([[]]);
+            this.step.push(-1);
+            this.lastStep.push(-1);
+        }
+        this.currentFrame += 1;
+
+        //this.eraseAllPaths();
+        this.drawFromSimplePaths();
+    }
+
+
+    goToPreviousFrame()
+    {
+        if (this.currentFrame > 0)
+        {
+            this.currentFrame -= 1;
+            this.drawFromSimplePaths();
+        }
+    }
+
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+
 
     /* SAVE / IMPORT / EXPORT */
 
@@ -721,18 +767,18 @@ class Tablica
 
     updateSimplePaths()
     {
-        this.step += 1;
-        this.simplePaths[this.currentFrame][this.step] = [];
+        this.step[this.currentFrame] += 1;
+        this.simplePaths[this.currentFrame][this.step[this.currentFrame]] = [];
 
         for (let k = 0;k<this.frame._children.length;k++)
         {
-            this.simplePaths[this.currentFrame][this.step].push(this.convertToSimplePath(this.frame._children[k]));
+            this.simplePaths[this.currentFrame][this.step[this.currentFrame]].push(this.convertToSimplePath(this.frame._children[k]));
         }
         this.simplePaths[this.currentFrame].push([]);
 
-        if (this.lastStep < this.step)
+        if (this.lastStep[this.currentFrame] < this.step[this.currentFrame])
         {
-            this.lastStep = this.step;
+            this.lastStep[this.currentFrame] = this.step[this.currentFrame];
         }
         
     }
@@ -741,30 +787,30 @@ class Tablica
     drawFromSimplePaths()
     {
         this.frame.clear();
-        this.currentPath = [-1];
-        if (this.step>-1)
+        this.currentPath[this.currentFrame] = -1;
+        if (this.step[this.currentFrame]>-1)
         {
-            for (let k = 0;k<this.simplePaths[this.currentFrame][this.step].length;k++)
+            for (let k = 0;k<this.simplePaths[this.currentFrame][this.step[this.currentFrame]].length;k++)
             {
                 this.currentPath[this.currentFrame] += 1;
 
                 let segments = [];
 
-                for (let i = 0;i<this.simplePaths[this.currentFrame][this.step][k].x.length;i++)
+                for (let i = 0;i<this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].x.length;i++)
                 {
-                    let p =  new paper.Point(this.simplePaths[this.currentFrame][this.step][k].x[i],this.simplePaths[this.currentFrame][this.step][k].y[i]);
-                    let h_in = new paper.Point(this.simplePaths[this.currentFrame][this.step][k].xIn[i],this.simplePaths[this.currentFrame][this.step][k].yIn[i]);
-                    let h_out = new paper.Point(this.simplePaths[this.currentFrame][this.step][k].xOut[i],this.simplePaths[this.currentFrame][this.step][k].yOut[i]);
+                    let p =  new paper.Point(this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].x[i],this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].y[i]);
+                    let h_in = new paper.Point(this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].xIn[i],this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].yIn[i]);
+                    let h_out = new paper.Point(this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].xOut[i],this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].yOut[i]);
                     
                     segments.push(new paper.Segment(p,h_in,h_out));
                 }
 
                 this.frame.addChild(new paper.Path(segments));
-                this.frame.children[this.currentPath].strokeColor = this.simplePaths[this.currentFrame][this.step][k].color;
-                this.frame.children[this.currentPath].strokeWidth = this.simplePaths[this.currentFrame][this.step][k].width;
-                this.frame.children[this.currentPath].selected = this.simplePaths[this.currentFrame][this.step][k].selected;
-                this.frame.children[this.currentPath].closed = this.simplePaths[this.currentFrame][this.step][k].closed;
-                this.frame.children[this.currentPath].strokeCap = "round";
+                this.frame.children[this.currentPath[this.currentFrame]].strokeColor = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].color;
+                this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].width;
+                this.frame.children[this.currentPath[this.currentFrame]].selected = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].selected;
+                this.frame.children[this.currentPath[this.currentFrame]].closed = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].closed;
+                this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
             }
             let tempItems = paper.project.getItems({selected:true, class:paper.Path});
             if (tempItems.length>0)
@@ -778,9 +824,9 @@ class Tablica
 
     undo()
     {
-        if (this.step >= 0)
+        if (this.step[this.currentFrame] >= 0)
         {
-            this.step -=1;
+            this.step[this.currentFrame] -=1;
             this.drawFromSimplePaths();
         }
         
@@ -788,13 +834,223 @@ class Tablica
 
     redo()
     {
-        if (this.step < this.lastStep)
+        if (this.step[this.currentFrame] < this.lastStep[this.currentFrame])
         {
-            this.step +=1;
+            this.step[this.currentFrame] +=1;
             this.drawFromSimplePaths();
         }
     }
 
+
+    loadHTMLFile(input)
+    {
+        
+    
+        this.fileReader.readAsText(input.files[0]); // hier muss gewartet werden
+      
+
+
+    }
+
+    importPathsFromHTML()
+    {
+        // first: loadHTMLFile(...) . Reason loadfile is async?!
+        
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(this.fileReader.result,"text/xml"); 
+        let tempParagraphs = xmlDoc.childNodes[0].getElementsByTagName("p"); // p-Nodes = frames
+
+        
+        console.log(tempParagraphs);
+
+        this.frame = new paper.Group();
+        this.currentPath = [-1];
+        this.currentFrame = 0;
+        this.lastFrame = 0;
+
+        // save, load, redo, undo
+        this.simplePaths = [[[]]];
+        this.step = [-1];  // for redo/undo
+        this.lastStep = [-1];
+        this.maxSteps = 5; // max redo-steps
+
+
+        
+        for (let k = 0;k<tempParagraphs.length;k++)
+        {         
+
+            
+            let tempSVGPaths = tempParagraphs[k].getElementsByTagName("path");
+           // console.log(tempSVGPaths);
+            
+            for (let i = 0;i<tempSVGPaths.length;i++)
+            {
+
+                
+               
+
+                this.currentPath[this.currentFrame] +=1;
+                this.frame.addChild(new paper.Path(tempSVGPaths[i].getAttribute("d")));
+                this.frame.children[this.currentPath[this.currentFrame]].strokeColor = tempSVGPaths[i].getAttribute("stroke");
+                this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = tempSVGPaths[i].getAttribute("stroke-width");
+                this.frame.children[this.currentPath[this.currentFrame]].selected = false;
+                if (tempSVGPaths[i].getAttribute("fill") == "none")
+                {
+                    this.frame.children[this.currentPath[this.currentFrame]].closed = false;
+                }
+                else
+                {
+                    this.frame.children[this.currentPath[this.currentFrame]].closed = true;
+                }
+                this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
+
+                
+            }
+            this.updateSimplePaths();
+          //  this.drawFromSimplePaths();
+            if (k <tempParagraphs.length-1)
+            {
+                this.goToNextFrame();
+            }
+        }
+    }
+
+/*
+
+    importPathsFromHTML(input)
+    {
+        
+        if (input.files && input.files[0]) 
+        {
+            var reader = new FileReader(); // muss ich besser verstehen
+
+
+            reader.xmlDoc = this;
+
+            reader.onload = function (e) 
+            {   
+               // console.log(this);
+            //  e.target.tablica.simplePaths = e.target.tablica.importPathsFromHTMLSubfunc(e.target.result,e.target.tablica);
+                let parser = new DOMParser(); 
+                          
+                e.target.xmlDoc = parser.parseFromString(e.target.result,"text/xml");
+               // console.log(e.target.tablica.xmlDoc);          
+            };  
+
+            this.xmlDoc = reader.xmlDoc;
+            console.log(this.xmlDoc);  
+            let tempParagraphs = this.xmlDoc.childNodes[0].getElementsByTagName("p"); // p-Nodes = frames
+            reader.readAsText(input.files[0]);
+        }
+
+    }
+
+    importPathsFromXmlDoc()
+    {
+
+           
+        
+        
+        let N = tempParagraphs.length;
+        
+        
+  
+        
+
+        // save, redo, undo
+        this.simplePaths = [];
+        this.step = [];  // for redo/undo
+        this.lastStep = [];
+        this.currentPath = [];
+        this.currentFrame = 0;
+        this.lastFrame = 0;
+        this.frame.clear();
+
+
+        for (let k = 0;k<N;k++)
+        {         
+            this.simplePaths.push([[]]);
+            this.step.push(0);
+            this.lastStep.push(0);
+            this.currentPath.push(-1);
+            
+            let tempSVGPaths = tempParagraphs[k].getElementsByTagName("path");
+            console.log(tempSVGPaths);
+            
+            for (let i = 0;i<tempSVGPaths.length;i++)
+            {
+                this.currentPath[this.currentFrame] +=1;
+                this.frame.addChild(new paper.Path(new paper.Path(tempSVGPaths[i].getAttribute("d"))));
+                this.frame.children[this.currentPath[this.currentFrame]].strokeColor = tempSVGPaths[i].getAttribute("stroke");
+                this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = tempSVGPaths[i].getAttribute("stroke-width");
+                this.frame.children[this.currentPath[this.currentFrame]].selected = false;
+                if (tempSVGPaths[i].getAttribute("fill") == "none")
+                {
+                    this.frame.children[this.currentPath[this.currentFrame]].closed = false;
+                }
+                else
+                {
+                    this.frame.children[this.currentPath[this.currentFrame]].closed = true;
+                }
+                this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
+
+            }
+            this.updateSimplePaths();
+           // this.drawFromSimplePaths();
+            if (k <N-1)
+            {
+             //   this.goToNextFrame();
+            }
+        }
+        
+    }
+*/
+    exportPathsAsHTML()
+    {
+        let tempString = "<html>";
+        
+        let tempCurrentFrame = this.currentFrame;
+        
+            
+        for (let k = 0;k<=this.lastFrame;k++)
+        {
+            this.currentFrame = k;
+            this.drawFromSimplePaths();
+            tempString += "<p><svg height='"+this.canHeight +"' width='"+this.canWidth +"'>\n";
+        
+            for (let i = 0; i<this.frame._children.length;i++)
+            {
+                tempString += "<path fill ='none' stroke-linejoin='round' d='"+this.frame._children[i].pathData +"' stroke-width='"+this.frame._children[i].strokeWidth+"' stroke = '"+this.frame._children[i].strokeColor.toCSS() +"' />\n";
+            }
+            tempString +="</svg></p>\n"
+        }
+        tempString +="</html>"
+
+        this.currentFrame = tempCurrentFrame;
+        this.drawFromSimplePaths();
+
+        let a = window.document.createElement('a');
+        a.href = window.URL.createObjectURL(new Blob([tempString], {type: 'text/html'}));
+        a.download = 'tablica.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a); 
+    }
+
+    // JSON-Idee wird wahrscheinlich verworfen. Ersetzt durch svg
+    /*
+    saveSimplePathsAsJSON()
+    {
+        let JSONString = JSON.stringify(this.simplePaths);
+        let temp = window.document.createElement('a');
+        temp.href = window.URL.createObjectURL(new Blob([JSONString], {type: 'text/JSON'}));
+        temp.download = 'tablica.json';
+        document.body.appendChild(temp);
+        temp.click();
+        document.body.removeChild(temp); 
+    }
+
+    
     exportPathsAsJSON()
     {
         let width = [];
@@ -857,6 +1113,7 @@ class Tablica
         return JSONTablica;
     }
 
+
     exportPathsAsJSONFile()
     {
         let JSONString = this.exportPathsAsJSON();
@@ -904,7 +1161,7 @@ class Tablica
             }
         }   
     }
-
+    */
 }
 
 
