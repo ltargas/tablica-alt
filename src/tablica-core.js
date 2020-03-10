@@ -915,96 +915,7 @@ class Tablica
         }
     }
 
-/*
 
-    importPathsFromHTML(input)
-    {
-        
-        if (input.files && input.files[0]) 
-        {
-            var reader = new FileReader(); // muss ich besser verstehen
-
-
-            reader.xmlDoc = this;
-
-            reader.onload = function (e) 
-            {   
-               // console.log(this);
-            //  e.target.tablica.simplePaths = e.target.tablica.importPathsFromHTMLSubfunc(e.target.result,e.target.tablica);
-                let parser = new DOMParser(); 
-                          
-                e.target.xmlDoc = parser.parseFromString(e.target.result,"text/xml");
-               // console.log(e.target.tablica.xmlDoc);          
-            };  
-
-            this.xmlDoc = reader.xmlDoc;
-            console.log(this.xmlDoc);  
-            let tempParagraphs = this.xmlDoc.childNodes[0].getElementsByTagName("p"); // p-Nodes = frames
-            reader.readAsText(input.files[0]);
-        }
-
-    }
-
-    importPathsFromXmlDoc()
-    {
-
-           
-        
-        
-        let N = tempParagraphs.length;
-        
-        
-  
-        
-
-        // save, redo, undo
-        this.simplePaths = [];
-        this.step = [];  // for redo/undo
-        this.lastStep = [];
-        this.currentPath = [];
-        this.currentFrame = 0;
-        this.lastFrame = 0;
-        this.frame.clear();
-
-
-        for (let k = 0;k<N;k++)
-        {         
-            this.simplePaths.push([[]]);
-            this.step.push(0);
-            this.lastStep.push(0);
-            this.currentPath.push(-1);
-            
-            let tempSVGPaths = tempParagraphs[k].getElementsByTagName("path");
-            console.log(tempSVGPaths);
-            
-            for (let i = 0;i<tempSVGPaths.length;i++)
-            {
-                this.currentPath[this.currentFrame] +=1;
-                this.frame.addChild(new paper.Path(new paper.Path(tempSVGPaths[i].getAttribute("d"))));
-                this.frame.children[this.currentPath[this.currentFrame]].strokeColor = tempSVGPaths[i].getAttribute("stroke");
-                this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = tempSVGPaths[i].getAttribute("stroke-width");
-                this.frame.children[this.currentPath[this.currentFrame]].selected = false;
-                if (tempSVGPaths[i].getAttribute("fill") == "none")
-                {
-                    this.frame.children[this.currentPath[this.currentFrame]].closed = false;
-                }
-                else
-                {
-                    this.frame.children[this.currentPath[this.currentFrame]].closed = true;
-                }
-                this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
-
-            }
-            this.updateSimplePaths();
-           // this.drawFromSimplePaths();
-            if (k <N-1)
-            {
-             //   this.goToNextFrame();
-            }
-        }
-        
-    }
-*/
     exportPathsAsHTML()
     {
         let tempString = "<html>";
@@ -1037,131 +948,43 @@ class Tablica
         document.body.removeChild(a); 
     }
 
-    // JSON-Idee wird wahrscheinlich verworfen. Ersetzt durch svg
-    /*
-    saveSimplePathsAsJSON()
+    copySelectedPathToClipBoard()
     {
-        let JSONString = JSON.stringify(this.simplePaths);
-        let temp = window.document.createElement('a');
-        temp.href = window.URL.createObjectURL(new Blob([JSONString], {type: 'text/JSON'}));
-        temp.download = 'tablica.json';
-        document.body.appendChild(temp);
-        temp.click();
-        document.body.removeChild(temp); 
-    }
+        let selectedItems = paper.project.getItems({selected:true, class:paper.Path});
 
-    
-    exportPathsAsJSON()
-    {
-        let width = [];
-        let color = [];
-        let closed = [];
-        let selected = [];
-
-        let x = [];
-        let xIn = [];
-        let xOut = [];
-
-        let y = [];
-        let yIn = [];
-        let yOut = [];
-
-        for (let j=0;j < this.frame.children.length;j++)
+        let tempString = "<svg height='"+this.canHeight +"' width='"+this.canWidth +"'>\n";
+        
+        for (let i=0;i<selectedItems.length;i++)
         {
-
-            width.push(this.frame.children[j].strokeWidth);
-            color.push(this.frame.children[j].strokeColor._components);
-            closed.push(this.frame.children[j].closed);
-            selected.push(this.frame.children[j].selected);
-
-            x.push([]);
-            xIn.push([]);
-            xOut.push([]);
-
-            y.push([]);
-            yIn.push([]);
-            yOut.push([]);
-
-            for (let k = 0;k < this.frame.children[j].segments.length;k++)
-            {
-                x[j].push(this.frame.children[j].segments[k].point._x);
-                xIn[j].push(this.frame.children[j].segments[k]._handleIn._x);
-                xOut[j].push(this.frame.children[j].segments[k]._handleOut._x);
-
-                y[j].push(this.frame.children[j].segments[k].point._y);
-                yIn[j].push(this.frame.children[j].segments[k]._handleIn._y);
-                yOut[j].push(this.frame.children[j].segments[k]._handleOut._y);
-            }
+            tempString += "<path fill ='none' stroke-linejoin='round' d='"+selectedItems[i].pathData +"' stroke-width='"+selectedItems[i].strokeWidth+"' stroke = '"+selectedItems[i].strokeColor.toCSS() +"' />\n";
         }
-        
-        let tempTablica = 
-        {
-            width: width,
-            color: color,
-            closed: closed,
-            selected: selected,
-            x : x,
-            xIn: xIn,
-            xOut: xOut,
-            y : y,
-            yIn: yIn,
-            yOut: yOut
-        };
+        tempString +="</svg>\n"
+        var el = document.createElement('textarea');
+        el.value = tempString;
+        el.setAttribute('readonly', '');
+        el.style = {position: 'absolute', left: '-9999px'};
+        document.body.appendChild(el);
+        el.select();
+        el.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        document.body.removeChild(el);
 
-        let JSONTablica = JSON.stringify(tempTablica);
-
-        return JSONTablica;
     }
 
-
-    exportPathsAsJSONFile()
+    pastePathFromClipBoard()
     {
-        let JSONString = this.exportPathsAsJSON();
-        let a = window.document.createElement('a');
-        a.href = window.URL.createObjectURL(new Blob([JSONString], {type: 'text/JSON'}));
-        a.download = 'tablica.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a); 
+        var el = document.createElement('textarea');
+        el.setAttribute('readonly', '');
+        el.style = {position: 'absolute', left: '-9999px'};
+        document.body.appendChild(el);
+        el.focus();
+       // document.execCommand('paste');
+       navigator.clipboard.readText().then(clipText => el.value = clipText);
+       console.log(el.value);
+
+        document.body.removeChild(el);
     }
-
-    importPathsFromJSON(JSONString)
-    {
-        let pathsObj = JSON.parse(JSONString);
-        let tempSegments;
-        this.eraseAllPaths();
-        
-        for (let j=0;j < pathsObj.x.length;j++)
-        {
-            tempSegments = [];
-            for (let k = 0;k < pathsObj.x[j].length;k++)
-            {    
-                tempSegments.push(new paper.Segment(
-                    new paper.Point(pathsObj.x[j][k], pathsObj.y[j][k]), 
-                    new paper.Point(pathsObj.xIn[j][k], pathsObj.yIn[j][k]), 
-                    new paper.Point(pathsObj.xOut[j][k] , pathsObj.yOut[j][k])
-                    ));          
-            }
-            
-            this.frame.addChild(new paper.Path({
-                segments: tempSegments,
-                strokeColor: new paper.Color(pathsObj.color[j][0],pathsObj.color[j][1],pathsObj.color[j][2]),
-                strokeWidth: pathsObj.width[j],
-                strokeCap: 'round',
-                closed: pathsObj.closed[j],
-                selected: pathsObj.selected[j]
-            }));
-
-            this.currentPath[this.currentFrame] += 1;
-
-            if(paper.project.getItems({selected:true, class:paper.Path}).length != 0)
-            {
-                this.drawSelectRect(paper.project.getItems({selected:true, class:paper.Path}));
-                this.setTool("lasso");
-            }
-        }   
-    }
-    */
+    
 }
 
 

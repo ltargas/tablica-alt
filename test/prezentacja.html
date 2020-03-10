@@ -18,7 +18,7 @@
     <button id="grab-btn">grab</button>
     <button id="export-json-btn">export as json</button>
     <button id="animate-btn">animate</button>
-
+    <button id="test-btn">test</button>
 
     <div id = 'divCanvas'></div>
        
@@ -38,7 +38,7 @@
     document.getElementById("grab-btn").onclick = function(){inkcanvas.setTool('grab')};
     document.getElementById("export-json-btn").onclick = function(){inkcanvas.exportPathsAsJSONFile()};
     document.getElementById("animate-btn").onclick = function(){inkcanvas.animatePaths(inkcanvas.frame._children);k++};
-
+    document.getElementById("test-btn").onclick = function(){inkcanvas.getConectionPaths(inkcanvas.frame._children);k++};    
     //let testPath = inkcanvas.makeTestPath();
     
 

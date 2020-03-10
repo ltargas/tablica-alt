@@ -1,160 +1,76 @@
 class Prezentacja extends Tablica 
 {
 
-    makeTestSegmentArray()
+    getConectionPaths(paths)
     {
-        let p1 = new paper.Point(120,120);
-        let hIn1 = new paper.Point(0,120);
-        let hOut1 = new paper.Point(60,60);
-        let s1 = new paper.Segment(p1,hIn1,hOut1);
-        
-        let p2 = new paper.Point(300,140);
-        let hIn2 = new paper.Point(0,120);
-        let hOut2 = new paper.Point(-30,-60);
-        let s2 = new paper.Segment(p2,hIn2,hOut2);
+        let N = paths.length;
 
-        
-        let p3 = new paper.Point(300,340);
-        let hIn3 = new paper.Point(0,120);
-        let hOut3 = new paper.Point(30,60);
-        let s3 = new paper.Segment(p3,hIn3,hOut3);
-        
+        let conectionPaths = [];
 
-        return [s1,s2,s3];
-    }
-
-    makeTestPath()
-    {
-        let p1 = new paper.Point(120,120);
-        let hIn1 = new paper.Point(0,120);
-        let hOut1 = new paper.Point(60,60);
-        let s1 = new paper.Segment(p1,hIn1,hOut1);
-    /*
-        let in1 = new paper.Point(p1.x+hIn1.x,p1.y+hIn1.y);
-        let out1 = new paper.Point(p1.x+hOut1.x,p1.y+hOut1.y);
-*/
-
-        let p2 = new paper.Point(300,140);
-        let hIn2 = new paper.Point(0,120);
-        let hOut2 = new paper.Point(-30,-60);
-        let s2 = new paper.Segment(p2,hIn2,hOut2);
-/*
-        let in2 = new paper.Point(p2.x+hIn2.x,p2.y+hIn2.y);
-        let out2 = new paper.Point(p2.x+hOut2.x,p2.y+hOut2.y);
-*/
-/*
-        let tIn1 = new paper.Path(p1,in1);
-        tIn1.strokeColor = "red";
-        tIn1.strokeWidth = 3;
-
-        let tOut1 = new paper.Path(p1,out1);
-        tOut1.strokeColor = "blue";
-        tOut1.strokeWidth = 3;
-
-        let tIn2 = new paper.Path(p2,in2);
-        tIn2.strokeColor = "green";
-        tIn2.strokeWidth = 3;
-
-        let tOut2 = new paper.Path(p2,out2);
-        tOut2.strokeColor = "yellow";
-        tOut2.strokeWidth = 3;
-*/
-
-        
-        let p3 = new paper.Point(300,340);
-        let hIn3 = new paper.Point(0,120);
-        let hOut3 = new paper.Point(30,60);
-        let s3 = new paper.Segment(p3,hIn3,hOut3);
-        
-
-        let test = new paper.Path();
-        test.segments=[s1,s2,s3];
-        test.strokeColor = "black";
-        test.strokeWidth = 3;
-        return test;
-
-
-    }
-
-    /*
-    animatePath(path) // segmentsArray: Array of Path Segments
-    {
-
-        let simplePath = this.convertToSimplePath(path);
-        let segmentsArray = path.segments;
-        let t = 0;
-        let i = 0;
-        let N = segmentsArray.length-1;
-
-        let xPos = segmentsArray[i].point._x;
-        let yPos = segmentsArray[i].point._y;
-
-        let cursor = new paper.Path.Rectangle(new paper.Point(xPos, yPos), new paper.Size(this.cursorSize,this.cursorSize));
-        cursor.strokeColor = 'black';
-        cursor.fillColor = 'black';
-        cursor.shadowColor = "black";
-        cursor.shadowBlur = 10;
-
-        path.visible = false;
- 
-        let tempPath = new paper.Path();
-        tempPath.strokeColor = simplePath.color;
-        tempPath.strokeWidth = simplePath.width;
-
-        paper.view.onFrame =  function(event) 
+        if (N < 2 || N ==  null)
         {
-            let b0,b1,b2,b3,hB1,hB2;
-
-            b0 = segmentsArray[i].point._x;
-            hB1 =  segmentsArray[i]._handleOut._x;
-            hB2 = segmentsArray[i+1]._handleIn._x;
-            b3 =  segmentsArray[i+1].point._x;
-            b1 = b0+hB1;
-            b2 = b3+hB2;
-            
-            xPos = (-b0+3*b1-3*b2+b3)*t*t*t+(3*b0-6*b1+3*b2)*t*t+(-3*b0+3*b1)*t+b0;
-
-            b0 = segmentsArray[i].point._y;
-            hB1 =  segmentsArray[i]._handleOut._y;
-            hB2 = segmentsArray[i+1]._handleIn._y;
-            b3 =  segmentsArray[i+1].point._y;
-            b1 = b0+hB1;
-            b2 = b3+hB2;
-            
-            yPos = (-b0+3*b1-3*b2+b3)*t*t*t+(3*b0-6*b1+3*b2)*t*t+(-3*b0+3*b1)*t+b0;
-
-           
-            tempPath.add(new paper.Point(xPos,yPos));
-
-            cursor.position =  new paper.Point(xPos, yPos);
-
-            t +=0.2;
-            
-            if (t > 1)
-            {
-                t = 0;
-                i = i+1;
-                if (i == N)
-                {
-                    paper.view.pause();
-                    cursor.remove();
-                    tempPath.remove();
-                    path.visible = true;
-                }
-            }
-           // tempPath.remove();
-           // path.visible = true;
-            
+            return null;
         }
+        else
+        {
+            for (let k = 0;k < N-1;k++)
+            {
+                
+                let c = -2;
+
+                let hIn = new paper.Point(c*paths[k].lastSegment._handleIn._x,c*paths[k].lastSegment._handleIn._y);
+                let hOut = new paper.Point(c*paths[k+1].firstSegment._handleOut._x,c*paths[k+1].firstSegment._handleOut._y);
+
+                let from = new paper.Segment(paths[k].lastSegment.point,hIn,hIn);
+                let to = new paper.Segment(paths[k+1].firstSegment.point,hOut,hOut);
+        
+                var path = new paper.Path([from,to]);
+
+                conectionPaths.push(path);
+            }
+            return conectionPaths;   
+        }
+
     }
-    */
+
+ /*
+    getDeltaT(x,y)
+    {
+        let BL = Math.sqrt( (x[1] - x[0])*(x[1] - x[0]) + (y[1] - y[0])*(y[1] - y[0]) ) +  Math.sqrt( (x[2] - x[1])*(x[2] - x[1]) + (y[2] - y[1])*(y[2] - y[1]) ) +  Math.sqrt( (x[3] - x[2])*(x[3] - x[2]) + (y[3] - y[2])*(y[3] - y[2]) );
+        
+        
+        if (BL > 200)
+        {
+            return 0.05;
+        }
+        if (BL > 100)
+        {
+            return 0.1;
+        }
+
+        if (BL > 50)
+        {
+            return 0.2;
+        }
+
+        if (BL > 10)
+        {
+            return 0.25;
+        }
+
+
+        return 1.0;
+    }
+*/
 
     getBezierPoints(segmentsArray,i,coord)
     {
         let b0,b1,b2,b3,hB1,hB2;
         if (coord=="x")
         {
+          
             b0 = segmentsArray[i].point._x;
+
 
             try 
             {
@@ -225,43 +141,65 @@ class Prezentacja extends Tablica
         return (-b0+3*b1-3*b2+b3)*t*t*t+(3*b0-6*b1+3*b2)*t*t+(-3*b0+3*b1)*t+b0;
     }
 
-    animatePaths(paths) // paths: Array of paper.Path's 
+    animatePaths(tempPaths) // tempPaths: Array of paper.Path's 
     {
 
-        /*
-        ToDo Cursor vom Pfad zum Pfad bewegen nicht beamen.
-        */
+        if (tempPaths.length == 0)
+        {
+            return null;
+        }
+
+
+        let conectionPaths = this.getConectionPaths(tempPaths);
+        let paths = [];
+    
+        for (let j = 0;j<tempPaths.length-1;j++)
+        {
+            paths.push(tempPaths[j]);
+            paths.push(conectionPaths[j]);
+        }
+        paths.push(tempPaths[tempPaths.length-1]);
+
         let t = 0;
         let i = 0;
         let k = 0;  
         
         let L = paths.length;
+
+        
         
         if (L == 0)
         {
             return null;
         }
-        //in paths[k].onFrame existiert kein "this". Daher diese Loeosung. Unschoen, aber es funktioniert.
+        //in paths[k].onFrame ist "this" kein Tablica-Objekt
 
         let convertToSimplePath = this.convertToSimplePath; 
         let getPositionOnBezierCurve = this.getPositionOnBezierCurve;
         let getBezierPoints =  this.getBezierPoints;
-
         let simplePath = convertToSimplePath(paths[k]);
+        
+        
         let segmentsArray = paths[k].segments;     
-
+    
         let N = segmentsArray.length-1;
+        let xPos,yPos;
 
-        let xPos = segmentsArray[i].point._x;
-        let yPos = segmentsArray[i].point._y;
+        try 
+        {
+            xPos = segmentsArray[i].point._x;
+            yPos = segmentsArray[i].point._y;
+        }
+        catch (e) 
+        {
+            xPos = 0;
+            yPos = 0;
+        }
+        let dt = 0.25;
+      
 
-        /* durch cursor ersetzen */
-
-        let cursor = new paper.Path.Rectangle(new paper.Point(xPos, yPos), new paper.Size(this.cursorSize,this.cursorSize));
-        cursor.strokeColor = 'black';
-        cursor.fillColor = 'black';
-        cursor.shadowColor = "black";
-        cursor.shadowBlur = 10;
+        let cursor = this.cursor;
+        cursor.visible = true;
 
         for (let j = 0;j<L;j++)
         {
@@ -274,44 +212,44 @@ class Prezentacja extends Tablica
 
         paths[k].onFrame =  function(event) 
         {
+            cursor.visible = true;
+            let b0 = 0;
+            let b1 = 0;
+            let b2 = 0;
+            let b3 = 0;   
             
-           // let b0,b1,b2,b3,hB1,hB2;
-
-            let b0,b1,b2,b3;   
-            
-            /*
-            b0 = segmentsArray[i].point._x;
-            hB1 =  segmentsArray[i]._handleOut._x;
-            hB2 = segmentsArray[i+1]._handleIn._x;
-            b3 =  segmentsArray[i+1].point._x;
-            b1 = b0+hB1;
-            b2 = b3+hB2;
-            */
-            [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"x");
-            xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
-
-            /*
-            b0 = segmentsArray[i].point._y;
-            hB1 =  segmentsArray[i]._handleOut._y;
-            hB2 = segmentsArray[i+1]._handleIn._y;
-            b3 =  segmentsArray[i+1].point._y;
-            b1 = b0+hB1;
-            b2 = b3+hB2;
-            */
-           [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"y");
-            yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
            
-            tempPath.add(new paper.Point(xPos,yPos));
+            try
+            {
+                [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"x");
+                xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
 
-            cursor.position =  new paper.Point(xPos, yPos);
+                [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"y");
 
-            t +=0.2;
+                yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
+
+                tempPath.add(new paper.Point(xPos,yPos));
+
+                cursor.position =  new paper.Point(xPos, yPos);
+    
+                t +=dt;
+            }
+            catch(e)
+            {
+                t = 1;
+            //    i = i+1;
+                console.log("conection path error");
+                console.log("k = "+ k);
+                console.log("i = "+i);
+            }    
+           
             
-            if (t > 1)
+            if (t >0.95)
             {
                 t = 0;
                 i = i+1;
-                if (i == N)
+             
+                if (i >= N)
                 {
                     paths[k].visible = true;  
                     k += 1;
@@ -335,12 +273,13 @@ class Prezentacja extends Tablica
                     else
                     {
                         paper.view.pause();
-                        cursor.remove();
+                        cursor.visible = false;
                         tempPath.remove();
                     }
                 }
             }     
         }
+        
     }
 
 
