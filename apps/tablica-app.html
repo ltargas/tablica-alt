@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Load the Paper.js library -->
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.min.js"></script> --> <!-- online -->
+ <script type="text/javascript" src="../localpaperjs/paper-full.js"></script> <!-- online -->
+
+ <!-- Load  backend functions. tablica.js like something like inkcanvas from wpf (windows presentation foundation (wpf need .net)) -->
+<script type="text/javascript" src="../src/tablica-core.js"></script>
+
+<!-- Load frontend functions: buttons, menus, styles etc. -->
+<script type="text/javascript" src="js/draggable.js"></script>
+<link rel="stylesheet" href="css/tablica.css">
+
+</head>
+<body> 
+    <div id = "menuPanel" class="menuPanel">
+        <div id="menuPanelHeader">
+            ...
+        </div>
+        <div id="menuPanelBody">
+            
+            <div class ="btn-group" id="btn-group">
+                <div class = "btn" id="draw-btn"><img src = "icons/pen.png"><img src = "icons/penBlue.png"></div>
+                <div class = "btn" id="magneticLine-btn"><img src = "icons/line.png"><img src = "icons/lineBlue.png"></div>
+                <div class = "btn" id="magneticEllipse-btn"><img src = "icons/ellipse.png"><img src = "icons/ellipseBlue.png"></div>
+                <div class = "btn" id="erase-btn"><img src = "icons/eraseStroke.png"><img src = "icons/eraseStrokeBlue.png"></div>
+                <div class = "btn" id="lasso-btn"><img src = "icons/lasso.png"><img src = "icons/lassoBlue.png"></div>          
+                <div class = "btn" id="grab-btn"><img src = "icons/grab.png"><img src = "icons/grabBlue.png"></div>
+            </div>
+
+            <div class = "btn" id="magnet-btn"><img src = "icons/magnet.png"><img src = "icons/magnetBlue.png"></div>
+            <div class = "btn" id="color-btn"><img src = "icons/blanck.png"></div>
+
+            <div class = "btn" id="width-btn"></div>
+            <div class = "btn" id="dasharray-btn"></div>
+
+
+            <div class = "btn" id="undo-btn"><img src = "icons/undo.png"></div>
+            <div class = "btn" id="redo-btn"><img src = "icons/redo.png"></div>
+            
+            <div class = "btn" id="prev-btn"><img src = "icons/previous.png"></div>
+
+            <div class = "btn" id="next-btn"><img src = "icons/next.png"></div>
+
+            <div class = "btn" id="save-btn"><img src = "icons/save.png"></div>
+            <div class = "btn" id="load-btn"><img src = "icons/open.png"></div>
+            <input class = "btn" type="file" id="textfile" name="textfile" style="width:19em;"  />
+        </div>         
+    </div>
+    
+    <div class = "submenu" id = "submenu-color"></div>
+    <div class = "submenu" id = "submenu-width"></div>
+    <div class = "submenu" id = "submenu-dasharray"></div>
+    
+    <div id = 'divCanvas' class='divCavas'></div>
+
+    <script>
+    let frameWidth = screen.width;
+    let frameHeight = screen.height;
+
+    let hdWidth = 1920;
+    let hdHeight = 1080;
+
+    let gridStepX = 50;
+    let gridStepY = 50;
+
+    // let tablica = new Tablica(document.getElementById("divCanvas"),800,600,1280,720,40,40);
+    let tablica = new Tablica(document.getElementById("divCanvas"),frameWidth,frameHeight,hdWidth,hdHeight,gridStepX,gridStepY);
+    tablica.drawGrid();
+    </script>
+    <script type="text/javascript" src="js/tablicamenupanel.js"></script>
+
+
+</body>
+</html>

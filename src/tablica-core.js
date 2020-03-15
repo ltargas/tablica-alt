@@ -42,11 +42,12 @@ class Tablica
 
         this.currentColor = "black";
         this.currentWidth = 3;
+        this.currentDashArray = [1,0];
 
 
         // Tools
 
-        this.tool = "draw"; // draw, erasePath, lasso
+        this.tool = "draw"; // draw, line, ellipse, magneticLine, magneticEllipse, erasePath, lasso, grab
         this.isPressed = false;
    
 
@@ -57,6 +58,7 @@ class Tablica
         this.canvas.height = canHeight;
         this.canvas.style.background = "white";
         this.canvas.style.touchAction = "none";
+       
         this.divBox.appendChild(this.canvas);
 
         paper.setup(this.canvas);
@@ -67,6 +69,8 @@ class Tablica
         this.currentPath = [-1];
         this.currentFrame = 0;
         this.lastFrame = 0;
+
+        this.tempPath;
 
         // save, load, redo, undo
         this.simplePaths = [[[]]];
@@ -85,12 +89,57 @@ class Tablica
         this.lassoPath.closed = true;
         this.lassoPath.strokeWidth = 1.5;
         this.lassoPath.strokeColor = 'black';
-        this.lassoPath.dashArray = [10, 10];
+        this.lassoPath.dashArray = [8, 8];
         this.lassoPath.fillColor = new paper.Color(0.97, 0.97, 0.97);
         this.lassoPath.insertBelow(this.grid);
         this.isSelected = false;
         this.isMoved = false;
         this.minSelectionSize = 20;
+
+        /*
+        LassoPoints
+            0: top
+            1: top right
+            2: right
+            3: bottom right
+            4: bottom
+            5: bottom left
+            6: left
+            7: top left
+        */
+
+            this.lassoPointSize =new paper.Size(30, 30);
+            this.lassoPoints = [
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize)),
+            new paper.Path.Rectangle(new paper.Rectangle(new paper.Point(-1000,-1000), this.lassoPointSize))
+        ];
+
+        for (let i = 0;i<8;i++)
+        { 
+            this.lassoPoints[i].strokeColor = 'black';
+            this.lassoPoints[i].strokeWidth = 1.5;
+            this.lassoPoints[i].fillColor = new paper.Color(0.97, 0.97, 0.97);
+            this.lassoPoints[i].insertBelow(this.grid);
+        }
+
+        this.lassoPoints[0].pivot = this.lassoPoints[0].bounds.bottomCenter;
+        this.lassoPoints[1].pivot = this.lassoPoints[1].bounds.bottomLeft;
+        this.lassoPoints[2].pivot = this.lassoPoints[2].bounds.leftCenter;
+        this.lassoPoints[3].pivot = this.lassoPoints[3].bounds.topLeft;
+        this.lassoPoints[4].pivot = this.lassoPoints[4].bounds.topCenter;
+        this.lassoPoints[5].pivot = this.lassoPoints[5].bounds.topRight;
+        this.lassoPoints[6].pivot = this.lassoPoints[6].bounds.rightCenter;
+        this.lassoPoints[7].pivot = this.lassoPoints[7].bounds.bottomRight;
+        
+
+        this.currentLassoPoint = -1;
+        this.isInsideLassoPoint = false;
 
         // Layers
 
@@ -107,7 +156,7 @@ class Tablica
         this.cursorPrevY = 100;
 
         this.cursorSize = 8;
-
+        
         this.cursorVisibility = false;
 
         this.cursor = new paper.Path.Rectangle(new paper.Point(this.cursorX, this.cursorY), new paper.Size(this.cursorSize,this.cursorSize));
@@ -121,9 +170,9 @@ class Tablica
         // EventListener
 
         /* move */
-        this.canvas.addEventListener("pointermove",this.movepointer.bind(this)); // BIND(THIS) : this=Tablica ; this != canvas
-        this.canvas.addEventListener("touchmove",this.movepointerTouch.bind(this));
-        this.canvas.addEventListener("pointerdown",this.movepointer.bind(this));
+        this.canvas.addEventListener("pointermove",this.er.bind(this)); // BIND(THIS) : this=Tablica ; this != canvas
+        this.canvas.addEventListener("touchmove",this.erTouch.bind(this));
+        this.canvas.addEventListener("pointerdown",this.er.bind(this));
 
         /* Pointer visibility */
 
@@ -165,8 +214,8 @@ class Tablica
             var p1 = new paper.Point(i,0);
             var p2 = new paper.Point(i,this.canHeight);
             var line = new paper.Path.Line(p1, p2);
-            line.strokeWidth = 1;
-            line.strokeColor = "blue";
+            line.strokeWidth = 0.5;
+            line.strokeColor = "rgb(180,180,180)";
             this.grid.addChild(line);
         }
 
@@ -175,14 +224,14 @@ class Tablica
             var p1 = new paper.Point(0,i);
             var p2 = new paper.Point(this.canWidth,i);
             var line = new paper.Path.Line(p1, p2);
-            line.strokeWidth = 1;
-            line.strokeColor = "blue";
+            line.strokeWidth = 0.5;
+            line.strokeColor = "rgb(180,180,180)";
             this.grid.addChild(line);
         }
         this.firstLayer.activate();
     }
 
-    movepointer(e)
+    er(e)
     {
 
         this.cursorX = e.clientX - this.canvas.getBoundingClientRect().left + this.canvas.scrollLeft;
@@ -191,7 +240,7 @@ class Tablica
         this.cursor.position =  new paper.Point(this.cursorX, this.cursorY);
     }
 
-    movepointerTouch(e)
+    erTouch(e)
     {
 
         this.cursorX = e.touches[0].clientX - this.canvas.getBoundingClientRect().left + this.canvas.scrollLeft;
@@ -251,10 +300,22 @@ class Tablica
                 this.unselectPaths();
                 break;
             case "lasso":
-                this.cursor.fillColor = "grey";
+                this.cursor.fillColor = "black";
                 break;
             case "grab":
-                this.cursor.fillColor = "yellow";
+                this.cursor.fillColor = "black";
+                break;
+            case "line":
+                this.cursor.fillColor = "black";
+                break;
+            case "ellipse":
+                this.cursor.fillColor = "black";
+                break;
+            case "magneticLine":
+                this.cursor.fillColor = "black";
+                break;
+            case "magneticEllipse":
+                this.cursor.fillColor = "black";
                 break;
         }
     }
@@ -278,6 +339,19 @@ class Tablica
             case "grab":
                 this.grabStart();
                 break;
+            case "line":
+                this.lineStart();
+                break;
+            case "ellipse":
+                this.ellipseStart();
+                break;
+
+            case "magneticLine":
+                this.magneticLineStart();
+                break;
+            case "magneticEllipse":
+                this.magneticEllipseStart();
+                break;
         }
     }
 
@@ -298,6 +372,18 @@ class Tablica
                     break;
                 case "grab":
                     this.grabMove();
+                    break;
+                case "line":
+                    this.lineMove();
+                    break;
+                case "ellipse":
+                    this.ellipseMove();
+                    break;
+                case "magneticLine":
+                    this.magneticLineMove();
+                    break;
+                case "magneticEllipse":
+                    this.magneticEllipseMove();
                     break;
 
             }
@@ -321,6 +407,18 @@ class Tablica
             case "grab":
                 this.grabEnd();
                 break;
+            case "line":
+                this.lineEnd();
+                break;
+            case "ellipse":
+                this.ellipseEnd();
+                break;
+            case "magneticLine":
+                this.magneticLineEnd();
+                break;
+            case "magneticEllipse":
+                this.magneticEllipseEnd();
+                break;
 
         }
     }
@@ -334,9 +432,42 @@ class Tablica
     /* ---------------------------------------------- */
 
 
-    setColor()
+    setColor(c)
     {
+        this.currentColor = c;
+        this.cursor.fillColor = c;
 
+        let tempItems = paper.project.getItems({selected:true, class:paper.Path});
+
+        for (let i = 0; i < tempItems.length;i++)
+        {
+            tempItems[i].strokeColor = this.currentColor;
+        }
+
+    }
+
+    setStrokeWidth(w)
+    {
+        this.currentWidth = w;
+
+        let tempItems = paper.project.getItems({selected:true, class:paper.Path});
+
+        for (let i = 0; i < tempItems.length;i++)
+        {
+            tempItems[i].strokeWidth = this.currentWidth;
+        }
+    }
+
+    setStrokeDashArray(d)
+    {
+        this.currentDashArray = d;
+
+        let tempItems = paper.project.getItems({selected:true, class:paper.Path});
+
+        for (let i = 0; i < tempItems.length;i++)
+        {
+            tempItems[i].dashArray = this.currentDashArray;
+        }
     }
 
 
@@ -355,6 +486,7 @@ class Tablica
         this.frame.addChild(new paper.Path());
         this.frame._children[this.currentPath[this.currentFrame]].strokeColor = this.currentColor;
         this.frame._children[this.currentPath[this.currentFrame]].strokeWidth = this.currentWidth;
+        this.frame._children[this.currentPath[this.currentFrame]].dashArray = this.currentDashArray;
         this.frame._children[this.currentPath[this.currentFrame]].strokeCap = "round";
         this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
     }
@@ -367,17 +499,179 @@ class Tablica
     drawEnd()
     {
         this.isPressed = false;
-        if ( this.frame.children[this.currentPath[this.currentFrame]]._segments.length == 1)
+        try 
         {
-            this.frame.children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
-        }    
-        else
-        {
-            this.frame.children[this.currentPath[this.currentFrame]].simplify(10);
+            if ( this.frame.children[this.currentPath[this.currentFrame]]._segments.length == 1)
+            {
+                this.frame.children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
+            }    
+            else
+            {
+                this.frame.children[this.currentPath[this.currentFrame]].simplify(10);
+            }
+            this.updateSimplePaths();
         }
+        catch (err)
+        {
+            this.isPressed = true;
+        }
+       
+    }
+
+
+
+
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+
+    /* line*/
+
+    lineStart()
+    {
+        this.currentPath[this.currentFrame] += 1;
+        this.frame.addChild(new paper.Path());
+        this.frame._children[this.currentPath[this.currentFrame]].strokeColor = this.currentColor;
+        this.frame._children[this.currentPath[this.currentFrame]].strokeWidth = this.currentWidth;
+        this.frame._children[this.currentPath[this.currentFrame]].dashArray = this.currentDashArray;
+        this.frame._children[this.currentPath[this.currentFrame]].strokeCap = "round";
+        this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
+        this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
+    }
+
+    lineMove()
+    {
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.x = this.cursorX;
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.y = this.cursorY;
+    }
+
+    lineEnd()
+    {
         this.updateSimplePaths();
     }
 
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+
+    /* ellipse */
+
+    ellipseStart()
+    {
+        this.currentPath[this.currentFrame] += 1;
+        this.frame.addChild(new paper.Path());
+
+        this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
+        this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
+     
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.x = this.cursorX;
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.y = this.cursorY;
+        let rectangle = new paper.Rectangle(this.frame.children[this.currentPath[this.currentFrame]].firstSegment.point, this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point);
+   
+        this.tempPath = new paper.Path.Ellipse(rectangle);
+        this.tempPath.strokeColor = this.currentColor;
+        this.tempPath.strokeWidth = this.currentWidth;
+        this.tempPath.dashArray = this.currentDashArray;
+        this.tempPath.strokeCap = "round";
+        this.tempPath.closed = false;
+
+       
+    }
+
+    ellipseMove()
+    {
+
+        this.tempPath.remove();
+
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.x = this.cursorX;
+        this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point.y = this.cursorY;
+
+        let rectangle = new paper.Rectangle(this.frame.children[this.currentPath[this.currentFrame]].firstSegment.point, this.frame.children[this.currentPath[this.currentFrame]].lastSegment.point);
+      
+        this.tempPath = new paper.Path.Ellipse(rectangle);
+        this.tempPath.strokeColor = this.currentColor;
+        this.tempPath.strokeWidth = this.currentWidth;
+        this.tempPath.dashArray = this.currentDashArray;
+        this.tempPath.strokeCap = "round";
+    }
+
+    ellipseEnd()
+    {
+        this.frame.children[this.currentPath[this.currentFrame]].remove();
+        
+        this.tempPath.closed = false; // better for animation
+        
+        this.frame.addChild(this.tempPath.clone());
+
+
+        this.tempPath.firstSegment; // draw last segment 
+
+        this.frame.children[this.currentPath[this.currentFrame]].add(this.tempPath.firstSegment);
+        this.tempPath.remove();
+        this.updateSimplePaths();
+    }
+
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+
+    /* magnetic line*/
+
+    magneticLineStart()
+    {
+        this.discretizeMousePosition();
+        this.lineStart();
+    }
+
+    magneticLineMove()
+    {
+        this.discretizeMousePosition();
+        this.lineMove();
+    }
+
+    magneticLineEnd()
+    {
+        this.lineEnd();
+    }
+
+     /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+    /* ---------------------------------------------- */
+
+    /* magnetic Ellipse*/
+
+    magneticEllipseStart()
+    {
+        this.discretizeMousePosition();
+        this.ellipseStart();
+    }
+
+    magneticEllipseMove()
+    {
+        this.discretizeMousePosition();
+        this.ellipseMove();
+    }
+
+    magneticEllipseEnd()
+    {
+        this.ellipseEnd();
+    }
+
+  
+
+
+    /* discretization of MousePosition */
+
+    discretizeMousePosition()
+    {
+        
+        this.cursorX = this.gridStepX*0.5 * Math.round(this.cursorX*2/this.gridStepX);
+        this.cursorY = this.gridStepY*0.5 * Math.round(this.cursorY*2/this.gridStepY);
+
+        this.cursor.position =  new paper.Point(this.cursorX, this.cursorY);
+    }
+
+    
     /* ---------------------------------------------- */
     /* ---------------------------------------------- */
     /* ---------------------------------------------- */
@@ -451,7 +745,23 @@ class Tablica
         }
         else
         {
+            this.isInsideLassoPoint = false;
+            for (let i = 0; i<8 ;i++)
+            {
+                if (this.lassoPoints[i].contains(new paper.Point(this.cursorX,this.cursorY)))
+                {
+                    this.currentLassoPoint = i;
+                    this.isInsideLassoPoint = true;
+                }
+            }
+
             if (this.lassoPath.contains(new paper.Point(this.cursorX,this.cursorY)))
+            {
+                this.cursorPrevX = this.cursorX;
+                this.cursorPrevY = this.cursorY;
+                
+            }
+            else if (this.isInsideLassoPoint)
             {
                 this.cursorPrevX = this.cursorX;
                 this.cursorPrevY = this.cursorY;
@@ -481,19 +791,122 @@ class Tablica
             this.cursorPrevX = this.cursorX;
             this.cursorPrevY = this.cursorY;
 
-            let tempItems = paper.project.getItems({selected:true, class:paper.Path});
 
-            for (let i = 0; i < tempItems.length;i++)
-            {
-                oldX = tempItems[i].position._x;
-                oldY = tempItems[i].position._y;
+            // move selection
+            if (!this.isInsideLassoPoint)
+                {
+                let tempItems = paper.project.getItems({selected:true, class:paper.Path});
 
-                tempItems[i].position = new paper.Point(oldX + dx, oldY + dy);
+                for (let i = 0; i < tempItems.length;i++)
+                {
+                    oldX = tempItems[i].position._x;
+                    oldY = tempItems[i].position._y;
+
+                    tempItems[i].position = new paper.Point(oldX + dx, oldY + dy);
+                }
+                oldX = this.lassoPath.position._x;
+                oldY = this.lassoPath.position._y;
+                this.lassoPath.position = new paper.Point(oldX + dx, oldY + dy);
+
+                for (let i = 0;i<8;i++)
+                { 
+
+                    oldX = this.lassoPoints[i].position._x;
+                    oldY = this.lassoPoints[i].position._y;
+                    this.lassoPoints[i].position = new paper.Point(oldX + dx, oldY + dy); 
+                }  
             }
-            oldX = this.lassoPath.position._x;
-            oldY = this.lassoPath.position._y;
-            this.lassoPath.position = new paper.Point(oldX + dx, oldY + dy);
+            // transform selection
+            else
+            {
+                 
+                oldX = this.lassoPoints[this.currentLassoPoint].position._x;
+                oldY = this.lassoPoints[this.currentLassoPoint].position._y;
+                // this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX + dx, oldY + dy);
+
+                if (this.currentLassoPoint == 0 && oldY + dy < this.lassoPath.bounds.bottomCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX, oldY + dy);
+                    this.lassoPoints[7].position = new paper.Point(this.lassoPoints[7].position._x,this.lassoPoints[7].position._y + dy);
+                    this.lassoPoints[1].position = new paper.Point(this.lassoPoints[1].position._x,this.lassoPoints[1].position._y + dy);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x,this.lassoPoints[6].position._y + 0.5*dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x,this.lassoPoints[2].position._y + 0.5*dy);
+                }
+                else if (this.currentLassoPoint == 1 && oldX + dx > this.lassoPath.bounds.leftCenter._x && oldY + dy < this.lassoPath.bounds.bottomCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX + dx, oldY + dy);
+                    this.lassoPoints[7].position = new paper.Point(this.lassoPoints[7].position._x,this.lassoPoints[7].position._y + dy);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx,this.lassoPoints[0].position._y + dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x + dx,this.lassoPoints[2].position._y + 0.5*dy);
+                    this.lassoPoints[3].position = new paper.Point(this.lassoPoints[3].position._x + dx,this.lassoPoints[3].position._y);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5*dx,this.lassoPoints[4].position._y);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x,this.lassoPoints[6].position._y+0.5*dy);
+                }
+                else if (this.currentLassoPoint == 2 && oldX + dx > this.lassoPath.bounds.leftCenter._x)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX+dx, oldY);
+                    this.lassoPoints[3].position = new paper.Point(this.lassoPoints[3].position._x + dx,this.lassoPoints[3].position._y);
+                    this.lassoPoints[1].position = new paper.Point(this.lassoPoints[1].position._x + dx,this.lassoPoints[1].position._y);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx,this.lassoPoints[0].position._y);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5*dx,this.lassoPoints[4].position._y);
+                }
+
+                else if (this.currentLassoPoint == 3  && oldX + dx > this.lassoPath.bounds.leftCenter._x && oldY + dy > this.lassoPath.bounds.topCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX + dx, oldY + dy);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx ,this.lassoPoints[0].position._y);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5*dx,this.lassoPoints[4].position._y + dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x + dx,this.lassoPoints[2].position._y + 0.5*dy);
+                    this.lassoPoints[1].position = new paper.Point(this.lassoPoints[1].position._x + dx,this.lassoPoints[1].position._y);
+                    this.lassoPoints[5].position = new paper.Point(this.lassoPoints[5].position._x,this.lassoPoints[5].position._y + dy);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x,this.lassoPoints[6].position._y+0.5*dy);
+                }
+
+                else if (this.currentLassoPoint == 4 && oldY + dy > this.lassoPath.bounds.topCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX, oldY+dy);
+                    this.lassoPoints[3].position = new paper.Point(this.lassoPoints[3].position._x,this.lassoPoints[3].position._y + dy);
+                    this.lassoPoints[5].position = new paper.Point(this.lassoPoints[5].position._x,this.lassoPoints[5].position._y + dy);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x,this.lassoPoints[6].position._y + 0.5*dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x,this.lassoPoints[2].position._y + 0.5*dy);
+                }
+                else if (this.currentLassoPoint == 5 && oldX + dx < this.lassoPath.bounds.rightCenter._x && oldY + dy > this.lassoPath.bounds.topCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX + dx, oldY + dy);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx ,this.lassoPoints[0].position._y);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5*dx,this.lassoPoints[4].position._y + dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x ,this.lassoPoints[2].position._y + 0.5*dy);
+                    this.lassoPoints[7].position = new paper.Point(this.lassoPoints[7].position._x + dx,this.lassoPoints[7].position._y);
+                    this.lassoPoints[3].position = new paper.Point(this.lassoPoints[3].position._x,this.lassoPoints[3].position._y + dy);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x + dx,this.lassoPoints[6].position._y+0.5*dy);
+                }
+
+                else if (this.currentLassoPoint == 6 && oldX + dx < this.lassoPath.bounds.rightCenter._x)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX+dx, oldY);
+                    this.lassoPoints[7].position = new paper.Point(this.lassoPoints[7].position._x + dx,this.lassoPoints[7].position._y);
+                    this.lassoPoints[5].position = new paper.Point(this.lassoPoints[5].position._x + dx,this.lassoPoints[5].position._y);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5*dx,this.lassoPoints[4].position._y);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx,this.lassoPoints[0].position._y);
+                }
+
+                else if (this.currentLassoPoint == 7 && oldX + dx < this.lassoPath.bounds.rightCenter._x && oldY + dy < this.lassoPath.bounds.bottomCenter._y)
+                {
+                    this.lassoPoints[this.currentLassoPoint].position = new paper.Point(oldX + dx, oldY + dy);
+                    this.lassoPoints[0].position = new paper.Point(this.lassoPoints[0].position._x + 0.5*dx ,this.lassoPoints[0].position._y + dy);
+                    this.lassoPoints[1].position = new paper.Point(this.lassoPoints[1].position._x,this.lassoPoints[1].position._y + dy);
+                    this.lassoPoints[2].position = new paper.Point(this.lassoPoints[2].position._x ,this.lassoPoints[2].position._y + 0.5*dy);
+                    this.lassoPoints[4].position = new paper.Point(this.lassoPoints[4].position._x + 0.5 * dx,this.lassoPoints[4].position._y);
+                    this.lassoPoints[5].position = new paper.Point(this.lassoPoints[5].position._x+dx,this.lassoPoints[5].position._y);
+                    this.lassoPoints[6].position = new paper.Point(this.lassoPoints[6].position._x + dx,this.lassoPoints[6].position._y+0.5*dy);
+                }
+
+                this.resizeSelectedeObjects(dx,dy);
+
+            }
             this.isMoved = true;
+
+
         }
     }
 
@@ -508,6 +921,62 @@ class Tablica
     }
 
     /* lasso - subfunctions */
+
+
+    resizeSelectedeObjects(dx,dy)
+    {
+        let skaleW = (this.lassoPoints[2].position._x - this.lassoPoints[6].position._x) / this.lassoPath.bounds._width; 
+        let skaleH = (this.lassoPoints[4].position._y - this.lassoPoints[0].position._y) / this.lassoPath.bounds._height; 
+
+        let x =  (this.lassoPoints[2].position._x + this.lassoPoints[6].position._x)*0.5;
+        let y =  (this.lassoPoints[2].position._y + this.lassoPoints[6].position._y)*0.5;
+
+      
+
+        let center;
+        
+        if (this.currentLassoPoint == 0)
+        {
+            center = this.lassoPath.bounds.bottomCenter;
+        }
+        else if (this.currentLassoPoint == 1)
+        {
+            center = this.lassoPath.bounds.bottomLeft;
+        }
+        else if (this.currentLassoPoint == 2)
+        {
+            center = this.lassoPath.bounds.leftCenter;
+        }
+        else if (this.currentLassoPoint == 3)
+        {
+            center = this.lassoPath.bounds.topLeft;
+        }
+        else if (this.currentLassoPoint == 4)
+        {
+            center = this.lassoPath.bounds.topCenter;
+        }
+        else if (this.currentLassoPoint == 5)
+        {
+            center = this.lassoPath.bounds.topRight;
+        }
+        else if (this.currentLassoPoint == 6)
+        {
+            center = this.lassoPath.bounds.rightCenter;
+        }
+        else if (this.currentLassoPoint == 7)
+        {
+            center = this.lassoPath.bounds.bottomRight;
+        }
+        
+        this.lassoPath.scale(skaleW,skaleH,center);
+
+        let selectedItems = paper.project.getItems({selected:true, class:paper.Path});
+        for (let i = 0; i < selectedItems.length;i++)
+        {
+            selectedItems[i].scale(skaleW,skaleH,center);
+        }
+
+    }
 
     isInside(area,path)
     {
@@ -525,9 +994,9 @@ class Tablica
            }
         }
 
-
         return false;
     }
+
 
     drawSelectRect(tempItems)
     {
@@ -602,6 +1071,24 @@ class Tablica
 
         this.lassoPath.segments = new paper.Path.Rectangle(tempRectangle).segments;
         this.isSelected = true;
+
+        let p = [
+                    tempRectangle.topCenter,
+                    tempRectangle.topRight,
+                    tempRectangle.rightCenter,
+                    tempRectangle.bottomRight,
+                    tempRectangle.bottomCenter,
+                    tempRectangle.bottomLeft,
+                    tempRectangle.leftCenter,
+                    tempRectangle.topLeft
+                ];
+
+        for (let i = 0;i<8;i++)
+        { 
+            this.lassoPoints[i].position = p[i]; 
+        }        
+
+
     }
 
     selectPaths()
@@ -638,6 +1125,15 @@ class Tablica
         this.lassoPath.removeSegments();
         this.isSelected = false;
         this.isMoved = false;
+        this.isInsideLassoPoint = false;
+
+
+        for (let i = 0; i<8 ;i++)
+        {
+            this.lassoPoints[i].position = new paper.Point(-1000,-1000);
+        }
+
+
     }
 
     /* ---------------------------------------------- */
@@ -725,6 +1221,7 @@ class Tablica
         let color = path.strokeColor;
         let closed = path.closed;
         let selected = path.selected;
+        let dashArray = path.dashArray;
 
         let x = [];
         let xIn = [];
@@ -756,7 +1253,8 @@ class Tablica
             xOut: xOut,
             y : y,
             yIn: yIn,
-            yOut: yOut
+            yOut: yOut,
+            dashArray: dashArray
         };
 
         return simplePath;    
@@ -808,6 +1306,7 @@ class Tablica
                 this.frame.addChild(new paper.Path(segments));
                 this.frame.children[this.currentPath[this.currentFrame]].strokeColor = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].color;
                 this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].width;
+                this.frame.children[this.currentPath[this.currentFrame]].dashArray = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].dashArray;
                 this.frame.children[this.currentPath[this.currentFrame]].selected = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].selected;
                 this.frame.children[this.currentPath[this.currentFrame]].closed = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].closed;
                 this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
@@ -847,9 +1346,19 @@ class Tablica
         
     
         this.fileReader.readAsText(input.files[0]); // hier muss gewartet werden
-      
 
+    }
 
+    importDashArray(s)
+    {
+        let dashArray = [];
+        let sArray = s.split(" ");
+
+        for (let i = 0;i<sArray.length;i++)
+        {
+            dashArray.push(Number(sArray[i]));
+        }
+        return dashArray;
     }
 
     importPathsFromHTML()
@@ -860,28 +1369,23 @@ class Tablica
         let xmlDoc = parser.parseFromString(this.fileReader.result,"text/xml"); 
         let tempParagraphs = xmlDoc.childNodes[0].getElementsByTagName("p"); // p-Nodes = frames
 
-        
-        console.log(tempParagraphs);
-
         this.frame = new paper.Group();
         this.currentPath = [-1];
         this.currentFrame = 0;
         this.lastFrame = 0;
 
-        // save, load, redo, undo
+       
         this.simplePaths = [[[]]];
-        this.step = [-1];  // for redo/undo
+        this.step = [-1]; 
         this.lastStep = [-1];
-        this.maxSteps = 5; // max redo-steps
-
-
+        this.maxSteps = 5;
         
         for (let k = 0;k<tempParagraphs.length;k++)
         {         
 
             
             let tempSVGPaths = tempParagraphs[k].getElementsByTagName("path");
-           // console.log(tempSVGPaths);
+
             
             for (let i = 0;i<tempSVGPaths.length;i++)
             {
@@ -893,6 +1397,9 @@ class Tablica
                 this.frame.addChild(new paper.Path(tempSVGPaths[i].getAttribute("d")));
                 this.frame.children[this.currentPath[this.currentFrame]].strokeColor = tempSVGPaths[i].getAttribute("stroke");
                 this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = tempSVGPaths[i].getAttribute("stroke-width");
+
+                this.frame.children[this.currentPath[this.currentFrame]].dashArray = this.importDashArray(tempSVGPaths[i].getAttribute("stroke-dasharray"));
+
                 this.frame.children[this.currentPath[this.currentFrame]].selected = false;
                 if (tempSVGPaths[i].getAttribute("fill") == "none")
                 {
@@ -902,6 +1409,14 @@ class Tablica
                 {
                     this.frame.children[this.currentPath[this.currentFrame]].closed = true;
                 }
+
+                if (tempSVGPaths[i].getAttribute("d").includes("z") || tempSVGPaths[i].getAttribute("d").includes("Z"))
+                {
+                    this.frame.children[this.currentPath[this.currentFrame]].closed = true;
+                }
+
+               // console.log(tempSVGPaths[i].getAttribute("d"));
+
                 this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
 
                 
@@ -931,7 +1446,26 @@ class Tablica
         
             for (let i = 0; i<this.frame._children.length;i++)
             {
-                tempString += "<path fill ='none' stroke-linejoin='round' d='"+this.frame._children[i].pathData +"' stroke-width='"+this.frame._children[i].strokeWidth+"' stroke = '"+this.frame._children[i].strokeColor.toCSS() +"' />\n";
+
+                let dashArray = "";
+                for (let j = 0;j<this.frame._children[i].dashArray.length;j++)
+                {
+                    if (j < this.frame._children[i].dashArray.length -1)
+                    {
+                        dashArray += ""+this.frame._children[i].dashArray[j]+" ";
+                    }
+                    else
+                    {
+                        dashArray += ""+this.frame._children[i].dashArray[j];
+                    }
+                }    
+
+                tempString += "<path fill ='none' stroke-linejoin='round' d='"+this.frame._children[i].pathData; 
+                tempString +="' stroke-dasharray='"+dashArray;
+                tempString +="' stroke-width='"+this.frame._children[i].strokeWidth;
+                tempString +="' stroke-linecap='round";
+
+                tempString +="' stroke = '"+this.frame._children[i].strokeColor.toCSS() +"' />\n";
             }
             tempString +="</svg></p>\n"
         }

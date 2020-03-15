@@ -1,0 +1,79 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5e -->
+<!-- CreationDate: Thu May 31 09:53:06 2018 -->
+<!-- Magnification: 1.050 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="7.8in" height="7.8in"
+	viewBox="52 52 9343 9343">
+<g style="stroke-width:.025in; fill:none">
+
+<!-- Line -->
+<polyline points="7559,944
+8503,1889
+8503,2362
+7559,3307
+" style="stroke:#39B7CD;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="7559,944
+7086,944
+6141,1889
+" style="stroke:#39B7CD;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="6141,1889
+7559,3307
+" style="stroke:#39B7CD;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="6141,1889
+5669,2362
+" style="stroke:#39B7CD;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="7559,3307
+7086,3779
+" style="stroke:#39B7CD;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="1417,6614
+7086,944
+7559,944
+8503,1889
+8503,2362
+2834,8031
+944,8503
+1417,6614
+" style="stroke:#39B7CD;stroke-width:300;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="1417,6614
+1889,6614
+2834,7559
+2834,8031
+" style="stroke:#39B7CD;stroke-width:300;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="5669,2362
+7086,3779
+" style="stroke:#39B7CD;stroke-width:300;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line -->
+<polyline points="6141,1889
+7559,3307
+" style="stroke:#39B7CD;stroke-width:300;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+</g>
+</svg>

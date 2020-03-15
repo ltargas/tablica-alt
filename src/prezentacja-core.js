@@ -33,36 +33,6 @@ class Prezentacja extends Tablica
 
     }
 
- /*
-    getDeltaT(x,y)
-    {
-        let BL = Math.sqrt( (x[1] - x[0])*(x[1] - x[0]) + (y[1] - y[0])*(y[1] - y[0]) ) +  Math.sqrt( (x[2] - x[1])*(x[2] - x[1]) + (y[2] - y[1])*(y[2] - y[1]) ) +  Math.sqrt( (x[3] - x[2])*(x[3] - x[2]) + (y[3] - y[2])*(y[3] - y[2]) );
-        
-        
-        if (BL > 200)
-        {
-            return 0.05;
-        }
-        if (BL > 100)
-        {
-            return 0.1;
-        }
-
-        if (BL > 50)
-        {
-            return 0.2;
-        }
-
-        if (BL > 10)
-        {
-            return 0.25;
-        }
-
-
-        return 1.0;
-    }
-*/
-
     getBezierPoints(segmentsArray,i,coord)
     {
         let b0,b1,b2,b3,hB1,hB2;
@@ -179,6 +149,7 @@ class Prezentacja extends Tablica
         let getBezierPoints =  this.getBezierPoints;
         let simplePath = convertToSimplePath(paths[k]);
         
+        let currentColor = this.currentColor;
         
         let segmentsArray = paths[k].segments;     
     
@@ -195,7 +166,8 @@ class Prezentacja extends Tablica
             xPos = 0;
             yPos = 0;
         }
-        let dt = 0.25;
+        let dt = 0.334;
+        //let dt = 0.1;
       
 
         let cursor = this.cursor;
@@ -208,76 +180,101 @@ class Prezentacja extends Tablica
 
         let tempPath = new paper.Path();
         tempPath.strokeColor = simplePath.color;
+        if (simplePath.color != null)
+        {
+            cursor.fillColor = simplePath.color;
+        } 
+        else
+        {
+            cursor.fillColor = currentColor;
+        }
         tempPath.strokeWidth = simplePath.width;
 
-        paths[k].onFrame =  function(event) 
-        {
-            cursor.visible = true;
-            let b0 = 0;
-            let b1 = 0;
-            let b2 = 0;
-            let b3 = 0;   
+        paths[k].onFrame =  function(event)
+        { 
+           // if (event.count % 2 === 0)
+            {
+                cursor.visible = true;
+                let b0 = 0;
+                let b1 = 0;
+                let b2 = 0;
+                let b3 = 0;   
+                
             
-           
-            try
-            {
-                [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"x");
-                xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
-
-                [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"y");
-
-                yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
-
-                tempPath.add(new paper.Point(xPos,yPos));
-
-                cursor.position =  new paper.Point(xPos, yPos);
-    
-                t +=dt;
-            }
-            catch(e)
-            {
-                t = 1;
-            //    i = i+1;
-                console.log("conection path error");
-                console.log("k = "+ k);
-                console.log("i = "+i);
-            }    
-           
-            
-            if (t >0.95)
-            {
-                t = 0;
-                i = i+1;
-             
-                if (i >= N)
+                try
                 {
-                    paths[k].visible = true;  
-                    k += 1;
-                    if (k < L)
-                    {                      
-                        simplePath = convertToSimplePath(paths[k]);
-                        segmentsArray = paths[k].segments;
-                        N = segmentsArray.length-1;
-                        t = 0;
-                        i = 0;
+                    [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"x");
+                    xPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
 
-                        xPos = segmentsArray[i].point._x;
-                        yPos = segmentsArray[i].point._y;
+                    [b0,b1,b2,b3] =  getBezierPoints(segmentsArray,i,"y");
 
-                        tempPath.remove();
+                    yPos = getPositionOnBezierCurve(t,b0,b1,b2,b3);
 
-                        tempPath = new paper.Path();
-                        tempPath.strokeColor = simplePath.color;
-                        tempPath.strokeWidth = simplePath.width;
-                    }
-                    else
-                    {
-                        paper.view.pause();
-                        cursor.visible = false;
-                        tempPath.remove();
-                    }
+                    tempPath.add(new paper.Point(xPos,yPos));
+
+                    cursor.position =  new paper.Point(xPos, yPos);
+        
+                    t +=dt;
                 }
-            }     
+                catch(e)
+                {
+                    t = 1;
+                //    i = i+1;
+                    console.log("conection path error");
+                    console.log("k = "+ k);
+                    console.log("i = "+i);
+                }    
+            
+                
+                if (t >1)
+                {
+                    t = 0;
+                    i = i+1;
+                
+                    if (i >= N)
+                    {
+                        paths[k].visible = true;  
+                        k += 1;
+                        if (k < L)
+                        {                      
+                            simplePath = convertToSimplePath(paths[k]);
+                            segmentsArray = paths[k].segments;
+                            N = segmentsArray.length-1;
+                            t = 0;
+                            i = 0;
+
+                            xPos = segmentsArray[i].point._x;
+                            yPos = segmentsArray[i].point._y;
+
+                            tempPath.remove();
+
+                            tempPath = new paper.Path();
+                            tempPath.strokeColor = simplePath.color;
+                        
+                            if (simplePath.color != null)
+                            {
+                                cursor.fillColor = simplePath.color;
+                            } 
+                            else
+                            {
+                                cursor.fillColor = currentColor;
+                            }
+
+                            console.log(simplePath.color);
+
+                            tempPath.strokeWidth = simplePath.width;
+                        }
+                        else
+                        {
+                            paper.view.pause();
+                            cursor.visible = false;
+                            tempPath.remove();
+                            cursor.fillColor = currentColor;
+                        }
+                    }
+                }     
+            }
+
         }
         
     }

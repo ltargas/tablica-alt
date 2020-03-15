@@ -1,0 +1,92 @@
+img
+{
+display: inline;
+}
+
+
+html, body
+{
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.divCanvas
+{
+    margin: 0pt 0pt 0pt 0pt;
+    padding: 0pt 0pt 0pt 0pt;
+}
+
+#menuPanel
+{
+
+
+
+    position: absolute;
+    z-index: 9;
+    background-color: #ffffff;
+    border: 1px solid #d3d3d3;
+    text-align: center;
+
+}
+
+#menuPanelBody
+{
+    display: inline;
+}
+
+#menuPanelHeader
+{
+	padding: 10px;
+	cursor: move;
+	z-index: 10;
+	background-color: #2196F3;
+	color: #fff;
+}
+
+.btn
+{
+	float: left;
+	background-color: #ffffff;
+}
+
+.btn :hover
+{
+	background-color: #eaeaea;
+}
+
+
+.btn-color
+{
+    z-index: 11;
+    float: left;
+
+    border-style: solid;
+    border-width: 1px;
+}
+
+.btn-color :hover
+{
+    border-style: solid;
+    border-width: 1px;
+    border-color: #eaeaea;
+}
+
+
+.btn-group
+{
+    float: left;
+    margin: 0pt 0pt 0pt 0pt;
+    padding: 0pt 0pt 0pt 0pt;
+}
+
+.submenu
+{
+    position: absolute;
+    z-index: 10;
+
+    float: both;
+    display: none;
+    margin: 0pt 0pt 0pt 0pt;
+    padding: 0pt 0pt 0pt 0pt;
+}
+
