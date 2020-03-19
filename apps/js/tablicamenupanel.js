@@ -1,5 +1,5 @@
 document.getElementById("draw-btn").onclick = function(){tablica.setTool('draw');buttonGroup(this);};
-        
+
 document.getElementById("magneticLine-btn").onclick = function()
 {
     if (isMagnetic)
@@ -21,7 +21,7 @@ document.getElementById("magneticEllipse-btn").onclick = function()
     else
     {
         tablica.setTool('ellipse');
-    }   
+    }
     buttonGroup(this);
 };
 
@@ -60,10 +60,28 @@ document.getElementById("magnet-btn").onclick = function()
             tablica.setTool("magneticEllipse");
         }
     }
-    
-
-
 };
+
+
+document.getElementById("grid-btn").onclick = function()
+{
+
+	console.log(tablica.grid.visible);
+    if (!tablica.grid.visible)
+    {
+        document.getElementById("grid-btn").children[1].style.display = "inline";
+        document.getElementById("grid-btn").children[0].style.display = "none";
+
+		tablica.grid.visible = true;
+    }
+    else
+    {
+        document.getElementById("grid-btn").children[1].style.display = "none";
+        document.getElementById("grid-btn").children[0].style.display = "inline";
+		tablica.grid.visible = false;
+    }
+};
+
 
 
 document.getElementById("erase-btn").onclick = function(){tablica.setTool('erasePath');buttonGroup(this);};
@@ -73,8 +91,16 @@ document.getElementById("grab-btn").onclick = function(){tablica.setTool('grab')
 
 document.getElementById("undo-btn").onclick = function(){tablica.undo()};
 document.getElementById("redo-btn").onclick = function(){tablica.redo()};
-document.getElementById("prev-btn").onclick = function(){tablica.goToPreviousFrame()};
-document.getElementById("next-btn").onclick = function(){tablica.goToNextFrame()};
+document.getElementById("prev-btn").onclick = function()
+{
+    tablica.goToPreviousFrame();
+document.getElementById("frame").innerHTML = tablica.currentFrame+1;
+};
+document.getElementById("next-btn").onclick = function()
+{
+   tablica.goToNextFrame();
+   document.getElementById("frame").innerHTML = tablica.currentFrame+1;
+};
 
 document.getElementById("save-btn").onclick = function(){tablica.exportPathsAsHTML()};
 document.getElementById("textfile").onchange= function(){tablica.loadHTMLFile(this)};
@@ -121,7 +147,7 @@ for (let i= 0;i<widths.length;i++)
 {
     document.getElementById("width-choose-btn"+i).onclick = function()
     {
-        
+
         buttonHideSubmenu(this);
         let width = ""+Number(widths[i])*1;
         tablica.setStrokeWidth(Number(widths[i]));
@@ -152,7 +178,7 @@ for (let i= 0;i<dasharrayString.length;i++)
 {
     document.getElementById("dasharray-choose-btn"+i).onclick = function()
     {
-        
+
         buttonHideSubmenu(this);
         tablica.setStrokeDashArray(dasharraysNumber[i]);
         let svgDash = "<svg  height='48' width='96'> <line x1='6' y1='24' x2='90' y2='24' stroke-linecap='round' stroke='rgb(0,0,0)' stroke-width='3' stroke-dasharray='"+dasharrayString[i]+"' /> </svg>";
@@ -169,20 +195,27 @@ document.getElementById("dasharray-btn").innerHTML = svgDash;
 
 dragElement(document.getElementById("menuPanel"));
 
-document.getElementById("menuPanelHeader").ondblclick = function(){showHide(document.getElementById("menuPanelBody"))};
+document.getElementById("menuPanelHeader").ondblclick = function()
+{
+showHide(document.getElementById("menuPanelBody"));
+showHide(document.getElementById("info"));
+};
 
-document.getElementById("magnet-btn").children[0].style.display = "none";    
-document.getElementById("magnet-btn").children[1].style.display = "inline"; 
+document.getElementById("magnet-btn").children[0].style.display = "none";
+document.getElementById("magnet-btn").children[1].style.display = "inline";
 
-let isMagnetic = true;    
+document.getElementById("grid-btn").children[0].style.display = "none";
+document.getElementById("grid-btn").children[1].style.display = "inline";
+
+let isMagnetic = true;
 
 
-// 
+//
 
 
 
-document.getElementById("btn-group").children[0].children[0].style.display = "none";    
-document.getElementById("btn-group").children[0].children[1].style.display = "inline"; 
+document.getElementById("btn-group").children[0].children[0].style.display = "none";
+document.getElementById("btn-group").children[0].children[1].style.display = "inline";
 
 for (let i = 1;i<document.getElementById("btn-group").childElementCount;i++)
 {
@@ -200,7 +233,7 @@ function buttonGroup(elem)
             parent.children[i].children[1].style.display = "none";
         }
         else
-        { 
+        {
             elem.children[0].style.display = "none";
             elem.children[1].style.display = "inline";
         }

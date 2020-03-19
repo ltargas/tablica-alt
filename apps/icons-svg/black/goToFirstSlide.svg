@@ -1,0 +1,243 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5e -->
+<!-- CreationDate: Wed Mar 18 19:02:25 2020 -->
+<!-- Magnification: 1.050 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="7.1in" height="7.1in"
+	viewBox="459 459 8529 8529">
+<g style="stroke-width:.025in; fill:none">
+<!-- Line: box -->
+<rect x="472" y="472" width="8503" height="8503" rx="0" 
+style="stroke:#000000;stroke-width:8;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Line: box -->
+<rect x="1417" y="2362" width="6614" height="1889" rx="0" 
+style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#000000;
+"/>
+<!-- Line: box -->
+<rect x="1417" y="4251" width="6614" height="3779" rx="0" 
+style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#000000;
+"/>
+<!-- Line -->
+<polygon points="1889,4251
+1417,3779
+1889,3779
+2362,4251
+1889,4251
+1889,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="8031,4251
+7559,3779
+7086,3779
+7559,4251
+8031,4251
+8031,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="2362,3779
+2834,3779
+3307,4251
+2834,4251
+2362,3779
+2362,3779
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="3307,3779
+3779,4251
+4251,4251
+3779,3779
+3307,3779
+3307,3779
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="4251,3779
+4724,4251
+5196,4251
+4724,3779
+4251,3779
+4251,3779
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="5196,3779
+5669,4251
+6141,4251
+5669,3779
+5196,3779
+5196,3779
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="6141,3779
+6614,4251
+7086,4251
+6614,3779
+6141,3779
+6141,3779
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="8031,4251
+7559,4724
+7086,4724
+7559,4251
+8031,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="7086,4251
+6614,4724
+6141,4724
+6614,4251
+7086,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="6141,4251
+5669,4724
+5196,4724
+5669,4251
+6141,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="5196,4251
+4724,4724
+4251,4724
+4724,4251
+5196,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="4251,4251
+3779,4724
+3307,4724
+3779,4251
+4251,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="3307,4251
+2834,4724
+2362,4724
+2834,4251
+3307,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="2362,4251
+1889,4724
+1417,4724
+1889,4251
+2362,4251
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="1889,5669
+5669,5669
+5669,6141
+1889,6141
+1889,5669
+1889,5669
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="1889,6614
+5669,6614
+5669,7086
+1889,7086
+1889,6614
+1889,6614
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="6141,5669
+6614,5669
+6614,6141
+6141,6141
+6141,5669
+6141,5669
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="7086,5669
+7086,6141
+7559,6141
+7559,5669
+7086,5669
+7086,5669
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="6141,6614
+6141,7086
+6614,7086
+6614,6614
+6141,6614
+6141,6614
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polygon points="7086,6614
+7086,7086
+7559,7086
+7559,6614
+7086,6614
+7086,6614
+" style="stroke:#000000;stroke-width:48;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+</g>
+</svg>

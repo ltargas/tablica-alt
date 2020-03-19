@@ -8,6 +8,8 @@
 
  <!-- Load  backend functions. tablica.js like something like inkcanvas from wpf (windows presentation foundation (wpf need .net)) -->
 <script type="text/javascript" src="../src/tablica-core.js"></script>
+<script type="text/javascript" src="../src/folia-core.js"></script>
+
 
 <!-- Load frontend functions: buttons, menus, styles etc. -->
 <script type="text/javascript" src="js/draggable.js"></script>
@@ -45,10 +47,16 @@
 
             <div class = "btn" id="next-btn"><img src = "icons/next.png"></div>
 
+
+            <div class = "btn" id="prevSlide-btn"><img src = "icons/prevSlide.png"></div>
+            <div class = "btn" id="nextSlide-btn"><img src = "icons/nextSlide.png"></div>
+
+
             <div class = "btn" id="save-btn"><img src = "icons/save.png"></div>
             <div class = "btn" id="load-btn"><img src = "icons/open.png"></div>
             <input class = "btn" type="file" id="textfile" name="textfile" style="width:19em;"  />
-        </div>         
+
+        </div>                  
     </div>
     
     <div class = "submenu" id = "submenu-color"></div>
@@ -68,8 +76,21 @@
     let gridStepY = 50;
 
     // let tablica = new Tablica(document.getElementById("divCanvas"),800,600,1280,720,40,40);
-    let tablica = new Tablica(document.getElementById("divCanvas"),frameWidth,frameHeight,hdWidth,hdHeight,gridStepX,gridStepY);
+    let tablica = new Folia(document.getElementById("divCanvas"),frameWidth,frameHeight,hdWidth,hdHeight,gridStepX,gridStepY);
     tablica.drawGrid();
+
+
+    document.getElementById("prevSlide-btn").onclick = function()
+    {
+        tablica.previosSlide();
+        document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+    };
+    document.getElementById("nextSlide-btn").onclick = function()
+    {
+            tablica.nextSlide();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+    };
+
     </script>
     <script type="text/javascript" src="js/tablicamenupanel.js"></script>
 

@@ -14,10 +14,18 @@
 <link rel="stylesheet" href="css/tablica.css">
 
 </head>
-<body> 
+<body style="background-color:white"> 
+
+    <div class= "test"> 
+        <video id="video" controls playsinline autoplay>
+            <source src="../data/movie.m4v" type="video/mp4">
+        </video>
+    </div>
+    
+
     <div id = "menuPanel" class="menuPanel">
         <div id="menuPanelHeader">
-            <span id="info"> Frame = <span id="frame">1</span> Slide <span id="slide">1</span> </span> ... 
+            ...
         </div>
         <div id="menuPanelBody">
             
@@ -36,7 +44,6 @@
             <div class = "btn" id="width-btn"></div>
             <div class = "btn" id="dasharray-btn"></div>
 
-            <div class = "btn" id="grid-btn"><img src = "icons/grid.png"><img src = "icons/gridBlue.png"></div>
 
             <div class = "btn" id="undo-btn"><img src = "icons/undo.png"></div>
             <div class = "btn" id="redo-btn"><img src = "icons/redo.png"></div>

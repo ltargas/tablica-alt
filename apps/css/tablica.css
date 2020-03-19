@@ -4,16 +4,33 @@ display: inline;
 }
 
 
+
+
 html, body
 {
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.divCanvas
+.test
 {
+    position: fixed;
     margin: 0pt 0pt 0pt 0pt;
     padding: 0pt 0pt 0pt 0pt;
+    position: absolute;
+    left: 300px;
+    top: 300px;
+    z-index: -1;
+}
+
+
+.divCanvas
+{
+    position: absolute;
+    margin: 0pt 0pt 0pt 0pt;
+    padding: 0pt 0pt 0pt 0pt;
+    position: absolute;
+  
 }
 
 #menuPanel
@@ -22,7 +39,7 @@ html, body
 
 
     position: absolute;
-    z-index: 9;
+    z-index: 7;
     background-color: #ffffff;
     border: 1px solid #d3d3d3;
     text-align: center;
@@ -82,7 +99,7 @@ html, body
 .submenu
 {
     position: absolute;
-    z-index: 10;
+    z-index: 8;
 
     float: both;
     display: none;

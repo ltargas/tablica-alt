@@ -9,7 +9,8 @@
 
 <!-- Load  backend functions. tablica.js like something like inkcanvas from wpf (windows presentation foundation (wpf need .net)) -->
 <script type="text/javascript" src="../src/tablica-core.js"></script>
-<script type="text/javascript" src="../src/prezentacja-core.js"></script> <!-- aninations -->
+<script type="text/javascript" src="../src/folia-core.js"></script> <!-- slides -->
+<script type="text/javascript" src="../src/prezentacja-core.js"></script> <!-- animations -->
 
 
 <!-- Load frontend functions: buttons, menus, styles etc. -->
@@ -22,7 +23,7 @@
 <body> 
     <div id = "menuPanel" class="menuPanel">
         <div id="menuPanelHeader">
-            ...
+            <span id="info"> Frame = <span id="frame">1</span> Slide <span id="slide">1</span> </span> ... 
         </div>
         <div id="menuPanelBody">
             
@@ -41,6 +42,7 @@
             <div class = "btn" id="width-btn"></div>
             <div class = "btn" id="dasharray-btn"></div>
 
+            <div class = "btn" id="grid-btn"><img src = "icons/grid.png"><img src = "icons/gridBlue.png"></div>
 
             <div class = "btn" id="undo-btn"><img src = "icons/undo.png"></div>
             <div class = "btn" id="redo-btn"><img src = "icons/redo.png"></div>
@@ -49,10 +51,17 @@
 
             <div class = "btn" id="next-btn"><img src = "icons/next.png"></div>
 
+
+            <div class = "btn" id="prevSlide-btn"><img src = "icons/prevSlide.png"></div>
+            <div class = "btn" id="nextSlide-btn"><img src = "icons/nextSlide.png"></div>
+
+            <div class = "btn" id="blanckSlide-btn"><img src = "icons/goToFirstSlide.png"></div>
+            <div class = "btn" id="animate-btn"><img src = "icons/play.png"></div>
+
             <div class = "btn" id="save-btn"><img src = "icons/save.png"></div>
             <div class = "btn" id="load-btn"><img src = "icons/open.png"></div>
             <input class = "btn" type="file" id="textfile" name="textfile" style="width:19em;"  />
-            <idiv class = "btn" id="animate-btn"><img src = "icons/play.png"></div>
+
         </div>         
     </div>
     
@@ -79,7 +88,26 @@
     <script type="text/javascript" src="js/tablicamenupanel.js"></script>
 
     <script>
-        document.getElementById("animate-btn").onclick = function(){tablica.animatePaths(tablica.frame._children);};
+
+        document.getElementById("prevSlide-btn").onclick = function()
+        {
+            tablica.previosSlide();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+        };
+        document.getElementById("nextSlide-btn").onclick = function()
+        {
+             tablica.nextSlide();
+             document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+        };
+        document.getElementById("blanckSlide-btn").onclick = function(){ 
+            tablica.makeBlanckScreen();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+        };
+        document.getElementById("animate-btn").onclick = function(){
+            tablica.playNextSlideWithAnimation();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+        };
+        
 
         window.addEventListener('keydown', (event) => {
             
@@ -88,7 +116,8 @@
 
         if (event.keyCode == 80) // keyCode =  80 : p
         {
-            tablica.animatePaths(tablica.frame._children);
+            tablica.playNextSlideWithAnimation();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
         } 
         else if (event.keyCode == 72) // keyCode =  72 : h
         {
@@ -102,6 +131,12 @@
                 document.getElementById("menuPanel").style.display = "none";
             }
         }
+        else if (event.keyCode == 66) // keyCode =  66 : b
+        {
+            tablica.makeBlanckScreen();
+            document.getElementById("slide").innerHTML = tablica.strokeData[tablica.currentFrame]+1;
+        }
+
         }, false);
 
 

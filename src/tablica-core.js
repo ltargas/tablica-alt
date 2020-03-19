@@ -34,6 +34,8 @@ class Tablica
         this.divBox.style.width = "" +boxWidth+"px";
         this.divBox.style.height = ""+ boxHeight+"px";
 
+        this.divBox.style.background = "none";
+
         this.canWidth = canWidth;
         this.canHeight = canHeight;
 
@@ -56,8 +58,9 @@ class Tablica
         this.canvas = document.createElement('canvas');
         this.canvas.width = canWidth;
         this.canvas.height = canHeight;
-        this.canvas.style.background = "white";
+        this.canvas.style.background = "none";
         this.canvas.style.touchAction = "none";
+
        
         this.divBox.appendChild(this.canvas);
 
@@ -67,6 +70,9 @@ class Tablica
 
         this.frame = new paper.Group();
         this.currentPath = [-1];
+
+        this.strokeData = [0];
+
         this.currentFrame = 0;
         this.lastFrame = 0;
 
@@ -214,7 +220,7 @@ class Tablica
             var p1 = new paper.Point(i,0);
             var p2 = new paper.Point(i,this.canHeight);
             var line = new paper.Path.Line(p1, p2);
-            line.strokeWidth = 0.5;
+            line.strokeWidth = 1;
             line.strokeColor = "rgb(180,180,180)";
             this.grid.addChild(line);
         }
@@ -488,6 +494,7 @@ class Tablica
         this.frame._children[this.currentPath[this.currentFrame]].strokeWidth = this.currentWidth;
         this.frame._children[this.currentPath[this.currentFrame]].dashArray = this.currentDashArray;
         this.frame._children[this.currentPath[this.currentFrame]].strokeCap = "round";
+        this.frame._children[this.currentPath[this.currentFrame]].strokeData = this.strokeData[this.currentFrame];
         this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
     }
 
@@ -535,6 +542,7 @@ class Tablica
         this.frame._children[this.currentPath[this.currentFrame]].strokeWidth = this.currentWidth;
         this.frame._children[this.currentPath[this.currentFrame]].dashArray = this.currentDashArray;
         this.frame._children[this.currentPath[this.currentFrame]].strokeCap = "round";
+        this.frame._children[this.currentPath[this.currentFrame]].strokeData = this.strokeData[this.currentFrame];
         this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
         this.frame._children[this.currentPath[this.currentFrame]].add(new paper.Point(this.cursorX,this.cursorY));
     }
@@ -607,6 +615,7 @@ class Tablica
         this.tempPath.firstSegment; // draw last segment 
 
         this.frame.children[this.currentPath[this.currentFrame]].add(this.tempPath.firstSegment);
+        this.frame._children[this.currentPath[this.currentFrame]].strokeData = this.strokeData[this.currentFrame];
         this.tempPath.remove();
         this.updateSimplePaths();
     }
@@ -1185,6 +1194,7 @@ class Tablica
         {
             this.lastFrame += 1;
             this.currentPath.push(-1);
+            this.strokeData.push(0);
             this.simplePaths.push([[]]);
             this.step.push(-1);
             this.lastStep.push(-1);
@@ -1222,6 +1232,7 @@ class Tablica
         let closed = path.closed;
         let selected = path.selected;
         let dashArray = path.dashArray;
+        let data = path.strokeData;
 
         let x = [];
         let xIn = [];
@@ -1230,6 +1241,7 @@ class Tablica
         let y = [];
         let yIn = [];
         let yOut = [];
+
 	
 		for (let k = 0;k < path.segments.length;k++)
         {
@@ -1254,7 +1266,8 @@ class Tablica
             y : y,
             yIn: yIn,
             yOut: yOut,
-            dashArray: dashArray
+            dashArray: dashArray,
+            data: data
         };
 
         return simplePath;    
@@ -1310,6 +1323,7 @@ class Tablica
                 this.frame.children[this.currentPath[this.currentFrame]].selected = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].selected;
                 this.frame.children[this.currentPath[this.currentFrame]].closed = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].closed;
                 this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
+                this.frame._children[this.currentPath[this.currentFrame]].strokeData = this.simplePaths[this.currentFrame][this.step[this.currentFrame]][k].data;
             }
             let tempItems = paper.project.getItems({selected:true, class:paper.Path});
             if (tempItems.length>0)
@@ -1371,6 +1385,7 @@ class Tablica
 
         this.frame = new paper.Group();
         this.currentPath = [-1];
+        this.strokeData = [0];
         this.currentFrame = 0;
         this.lastFrame = 0;
 
@@ -1389,14 +1404,11 @@ class Tablica
             
             for (let i = 0;i<tempSVGPaths.length;i++)
             {
-
-                
-               
-
                 this.currentPath[this.currentFrame] +=1;
                 this.frame.addChild(new paper.Path(tempSVGPaths[i].getAttribute("d")));
                 this.frame.children[this.currentPath[this.currentFrame]].strokeColor = tempSVGPaths[i].getAttribute("stroke");
                 this.frame.children[this.currentPath[this.currentFrame]].strokeWidth = tempSVGPaths[i].getAttribute("stroke-width");
+                this.frame.children[this.currentPath[this.currentFrame]].strokeData = Number(tempSVGPaths[i].getAttribute("data-data"));
 
                 this.frame.children[this.currentPath[this.currentFrame]].dashArray = this.importDashArray(tempSVGPaths[i].getAttribute("stroke-dasharray"));
 
@@ -1415,14 +1427,11 @@ class Tablica
                     this.frame.children[this.currentPath[this.currentFrame]].closed = true;
                 }
 
-               // console.log(tempSVGPaths[i].getAttribute("d"));
-
                 this.frame.children[this.currentPath[this.currentFrame]].strokeCap = "round";
 
                 
             }
             this.updateSimplePaths();
-          //  this.drawFromSimplePaths();
             if (k <tempParagraphs.length-1)
             {
                 this.goToNextFrame();
@@ -1460,7 +1469,8 @@ class Tablica
                     }
                 }    
 
-                tempString += "<path fill ='none' stroke-linejoin='round' d='"+this.frame._children[i].pathData; 
+                tempString += "<path fill ='none' stroke-linejoin='round' d='"+this.frame._children[i].pathData;
+                tempString +="' data-data='"+this.frame._children[i].strokeData; 
                 tempString +="' stroke-dasharray='"+dashArray;
                 tempString +="' stroke-width='"+this.frame._children[i].strokeWidth;
                 tempString +="' stroke-linecap='round";
